@@ -313,7 +313,7 @@ static inline void tv4x_process_line(
             sum_i_len++;
         }
         
-        // K Events
+        // Q Events
         if (k->q_events[x]) {
             cur_q = sum_q / (float)sum_q_len;
             sum_q_len = 1;
