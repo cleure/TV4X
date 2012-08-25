@@ -44,6 +44,8 @@ int main(int argc, char **argv)
             &tv4x_setup_composite,
             tv4x_crt_slotmask,
             tv4x_crt_slotmask_rgb,
+            0.96f,
+            0.9f,
             width);
     
     // Process

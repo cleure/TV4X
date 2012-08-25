@@ -54,6 +54,8 @@ int tv4x_init_kernel(
         struct tv4x_setup *setup,
         float crt_mask[2][16],
         float crt_rgb[2][16][3],
+        float deluma,
+        float dechroma,
         int max_width) {
     
     unsigned int i;
@@ -65,6 +67,10 @@ int tv4x_init_kernel(
     k->in_fmt = in_fmt;
     k->out_fmt = out_fmt;
     k->setup = setup;
+    
+    // Deluma / Dechroma
+    k->deluma = deluma;
+    k->dechroma = dechroma;
     
     // Allocate space for YIQ events
     k->y_events = malloc(sizeof(*(k->y_events)) * max_width);
@@ -324,32 +330,17 @@ static inline void tv4x_process_line(
         
         /**
         
-        FIXME: Deluma/Dechroma code only works correctly when input is RGB24
         TODO:  Don't use rgb24_to_yiq. Use format agnostic version instead,
                or promote formats to RGB24 automatically.
         
         **/
         
         // Deluma
-        if (work_y > 0.0f) {
-            work_y -= 7.0f;
-        } else {
-            work_y += 7.0f;
-        }
+        work_y *= k->deluma;
         
         // Dechroma
-        if (work_i > 0.0f) {
-            work_i -= 3.0f;
-        } else {
-            work_i += 3.0f;
-        }
-        
-        // Dechroma
-        if (work_q > 0.0f) {
-            work_q -= 3.0f;
-        } else {
-            work_q += 3.0f;
-        }
+        work_i *= k->dechroma;
+        work_q *= k->dechroma;
         
         // Set prev YIQ
         prev_y = cur_y;
@@ -448,7 +439,6 @@ static inline void tv4x_process_line(
                 (int)matrix_r[r1][15],
                 (int)matrix_g[g1][15],
                 (int)matrix_b[b1][15], rgb_format_rgb24, out_ln4[(i2) + 3]);
-
 
         i1 += 1;
         i2 += 4;

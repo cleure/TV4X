@@ -26,8 +26,9 @@ struct tv4x_kernel {
     // Setup Type
     struct tv4x_setup *setup;
     
-    // CRT Mask
-    float *crt_mask[2][16];
+    // Effects
+    float deluma;
+    float dechroma;
     
     // Event Map
     uint8_t *y_events;
@@ -50,6 +51,8 @@ int tv4x_init_kernel(
         struct tv4x_setup *setup,
         float crt_mask[2][16],
         float crt_rgb[2][16][3],
+        float deluma,
+        float dechroma,
         int max_width);
 
 void tv4x_free_kernel(struct tv4x_kernel *k);
