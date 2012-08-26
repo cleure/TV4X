@@ -23,10 +23,10 @@ Performance
 
 The scaling filter performs rather well for the amount of work it does, however, there is a lot of room for improvement:
 
-    - The YIQ processing code does a lot of floating point math. It might be worth the
+- The YIQ processing code does a lot of floating point math. It might be worth the
       effort to pre-process the initial conversion from RGB to YIQ.
     
-    - Most of the work done in tv4x_process_line() is doing random lookups on pre-processed
+- Most of the work done in tv4x_process_line() is doing random lookups on pre-processed
       data, and copying that data to output pointers. It may be possible to further optimize
       this code by using data structures that are more CPU cache friendly, as random lookups
       plus copy is where the biggest bottleneck is.
@@ -41,3 +41,5 @@ TODO List
         - YIQ Event Burst (Average/Simple/Off)
         - Luma/Chroma
         - Scale RGB up/down
+- Rename external facing data types and functions, so they're all prefixed with "tv4x_".
+- Experiment with 2x and 3x scaling.
