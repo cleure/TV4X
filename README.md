@@ -43,3 +43,4 @@ TODO List
         - Scale RGB up/down
 - Rename external facing data types and functions, so they're all prefixed with "tv4x_".
 - Experiment with 2x and 3x scaling.
+- See if its possible to implement YIQ with integer math.
