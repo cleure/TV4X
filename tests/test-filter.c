@@ -27,10 +27,20 @@ int main(int argc, char **argv)
     
     // Kernel, data pointers
     struct tv4x_kernel kern;
-    uint32_t *in, *out;
+    uint32_t *in, *out, *rgb15;
     
     // Read file
     in = rgb24_from_png(argv[1], &width, &height);
+    rgb15 = malloc(sizeof(*rgb15) * width * height);
+    
+    // Convert to RGB15
+    rgb_convert(
+        &rgb_format_rgb24,
+        &rgb_format_rgb15,
+        in,
+        rgb15,
+        width * height);
+    
     out_width = width * 4;
     out_height = height * 4;
     
@@ -39,7 +49,7 @@ int main(int argc, char **argv)
     // Initialize kernel
     tv4x_init_kernel(
             &kern,
-            &rgb_format_rgb24,
+            &rgb_format_rgb15,
             &rgb_format_rgb24,
             &tv4x_setup_composite,
             tv4x_crt_slotmask,
@@ -52,7 +62,7 @@ int main(int argc, char **argv)
     start_time = clock();
     tv4x_process(
             &kern,
-            in,
+            rgb15,
             out,
             width,
             height);
@@ -75,6 +85,7 @@ int main(int argc, char **argv)
     tv4x_free_kernel(&kern);
     free(in);
     free(out);
+    free(rgb15);
 
     exit(0);
 }

@@ -142,20 +142,20 @@ int tv4x_init_kernel(
             r2 *= (float)out_fmt->r_mask / (float)in_fmt->r_mask;
             
             // RGB Matrix
-            r1 += crt_rgb[0][x][0];
-            r2 += crt_rgb[1][x][0];
+            r1 += crt_rgb[0][x][0] * ((float)in_fmt->r_mask / (float)out_fmt->r_mask);
+            r2 += crt_rgb[1][x][0] * ((float)in_fmt->r_mask / (float)out_fmt->r_mask);
             
             // Scanline brightness/contrast
             if (x >= 8) {
-                r1 = ((scan_slope * (1.0f/255.0f)) * r1 + scan_intersect) * 255.0f;
-                r2 = ((scan_slope * (1.0f/255.0f)) * r2 + scan_intersect) * 255.0f;
+                r1 = ((scan_slope * (1.0f / (float)out_fmt->r_mask)) *
+                     r1 + scan_intersect) * (float)out_fmt->r_mask;
+                r2 = ((scan_slope * (1.0f / (float)out_fmt->r_mask)) *
+                     r2 + scan_intersect) * (float)out_fmt->r_mask;
             }
             
             // Clamp
-            if (r1 < 0.0f) r1 = 0.0f;
-            if (r2 < 0.0f) r2 = 0.0f;
-            if (r1 > (float)out_fmt->r_mask) r1 = (float)out_fmt->r_mask;
-            if (r2 > (float)out_fmt->r_mask) r2 = (float)out_fmt->r_mask;
+            CLAMP(r1, 0.0f, (float)out_fmt->r_mask);
+            CLAMP(r2, 0.0f, (float)out_fmt->r_mask);
             
             // Copy
             k->r_matrix_ev[i][x] = r1;
@@ -178,20 +178,20 @@ int tv4x_init_kernel(
             g2 *= (float)out_fmt->g_mask / (float)in_fmt->g_mask;
             
             // RGB Matrix
-            g1 += crt_rgb[0][x][1];
-            g2 += crt_rgb[1][x][1];
+            g1 += crt_rgb[0][x][1] * ((float)in_fmt->g_mask / (float)out_fmt->g_mask);
+            g2 += crt_rgb[1][x][1] * ((float)in_fmt->g_mask / (float)out_fmt->g_mask);
             
             // Scanline brightness/contrast
             if (x >= 8) {
-                r1 = ((scan_slope * (1.0f/255.0f)) * r1 + scan_intersect) * 255.0f;
-                r2 = ((scan_slope * (1.0f/255.0f)) * r2 + scan_intersect) * 255.0f;
+                r1 = ((scan_slope * (1.0f / (float)out_fmt->g_mask)) *
+                     r1 + scan_intersect) * (float)out_fmt->g_mask;
+                r2 = ((scan_slope * (1.0f / (float)out_fmt->g_mask)) *
+                     r2 + scan_intersect) * (float)out_fmt->g_mask;
             }
             
             // Clamp
-            if (g1 < 0.0f) g1 = 0.0f;
-            if (g2 < 0.0f) g2 = 0.0f;
-            if (g1 > (float)out_fmt->g_mask) g1 = (float)out_fmt->g_mask;
-            if (g2 > (float)out_fmt->g_mask) g2 = (float)out_fmt->g_mask;
+            CLAMP(g1, 0.0f, (float)out_fmt->g_mask);
+            CLAMP(g2, 0.0f, (float)out_fmt->g_mask);
             
             // Copy
             k->g_matrix_ev[i][x] = g1;
@@ -214,20 +214,20 @@ int tv4x_init_kernel(
             b2 *= (float)out_fmt->b_mask / (float)in_fmt->b_mask;
             
             // RGB Matrix
-            b1 += crt_rgb[0][x][2];
-            b2 += crt_rgb[1][x][2];
+            b1 += crt_rgb[0][x][2] * ((float)in_fmt->b_mask / (float)out_fmt->b_mask);
+            b2 += crt_rgb[1][x][2] * ((float)in_fmt->b_mask / (float)out_fmt->b_mask);
             
             // Scanline brightness/contrast
             if (x >= 8) {
-                r1 = ((scan_slope * (1.0f/255.0f)) * r1 + scan_intersect) * 255.0f;
-                r2 = ((scan_slope * (1.0f/255.0f)) * r2 + scan_intersect) * 255.0f;
+                r1 = ((scan_slope * (1.0f / (float)out_fmt->b_mask)) *
+                     r1 + scan_intersect) * (float)out_fmt->b_mask;
+                r2 = ((scan_slope * (1.0f / (float)out_fmt->b_mask)) *
+                     r2 + scan_intersect) * (float)out_fmt->b_mask;
             }
             
             // Clamp
-            if (b1 < 0.0f) b1 = 0.0f;
-            if (b2 < 0.0f) b2 = 0.0f;
-            if (b1 > (float)out_fmt->b_mask) b1 = (float)out_fmt->b_mask;
-            if (b2 > (float)out_fmt->b_mask) b2 = (float)out_fmt->b_mask;
+            CLAMP(b1, 0.0f, (float)out_fmt->b_mask);
+            CLAMP(b2, 0.0f, (float)out_fmt->b_mask);
             
             // Copy
             k->b_matrix_ev[i][x] = b1;
@@ -284,8 +284,8 @@ static inline void tv4x_process_line(
     i2 = (y * out_width * 4);
     
     // Initial YIQ values
-    rgb24_to_yiq(in[i1], &cur_y, &cur_i, &cur_q);
-    rgb24_to_yiq(in[i1+1], &next_y, &next_i, &next_q);
+    rgb_to_yiq(k->in_fmt, in[i1], &cur_y, &cur_i, &cur_q);
+    rgb_to_yiq(k->in_fmt, in[i1+1], &next_y, &next_i, &next_q);
         
     //cur_y = (cur_y + next_y) / 2.0f;
     cur_i = (cur_i + next_i) / 2.0f;
@@ -300,7 +300,28 @@ static inline void tv4x_process_line(
     sum_q = cur_q;
     
     for (x = 0; x < in_width; x++) {
-        rgb24_to_yiq(in[i1], &tmp_y, &tmp_i, &tmp_q);
+        /*
+        
+void rgb_to_yiq(
+        struct rgb_format *fmt,
+        uint32_t rgb,
+        float *y,
+        float *i,
+        float *q);
+
+void yiq_to_rgb_unpacked(
+        struct rgb_format *fmt,
+        uint8_t *ro,
+        uint8_t *go,
+        uint8_t *bo,
+        float y,
+        float i,
+        float q);
+        
+        */
+    
+        rgb_to_yiq(k->in_fmt, in[i1], &tmp_y, &tmp_i, &tmp_q);
+        
         cur_y = tmp_y;
         
         // I Events
@@ -349,7 +370,7 @@ static inline void tv4x_process_line(
         
         // Get next YIQ
         if (i1 + 2 < in_width) {
-            rgb24_to_yiq(in[i1+2], &next_y, &next_i, &next_q);
+            rgb_to_yiq(k->in_fmt, in[i1+2], &next_y, &next_i, &next_q);
         } else {
             next_y = tmp_y;
             next_i = tmp_i;
@@ -357,88 +378,88 @@ static inline void tv4x_process_line(
         }
         
         // Get RGB from YIQ
-        yiq_to_rgb24_unpacked(&r1, &g1, &b1, work_y, work_i, work_q);
+        yiq_to_rgb_unpacked(k->in_fmt, &r1, &g1, &b1, work_y, work_i, work_q);
     
         // Pack pixels into output, using lookup matrices
         PACK_RGB(
                 (int)matrix_r[r1][0],
                 (int)matrix_g[g1][0],
-                (int)matrix_b[b1][0], rgb_format_rgb24, out_ln1[i2]);
+                (int)matrix_b[b1][0], *(k->out_fmt), out_ln1[i2]);
                 
         PACK_RGB(
                 (int)matrix_r[r1][1],
                 (int)matrix_g[g1][1],
-                (int)matrix_b[b1][1], rgb_format_rgb24, out_ln1[(i2) + 1]);
+                (int)matrix_b[b1][1], *(k->out_fmt), out_ln1[(i2) + 1]);
             
         PACK_RGB(
                 (int)matrix_r[r1][2],
                 (int)matrix_g[g1][2],
-                (int)matrix_b[b1][2], rgb_format_rgb24, out_ln1[(i2) + 2]);
+                (int)matrix_b[b1][2], *(k->out_fmt), out_ln1[(i2) + 2]);
             
         PACK_RGB(
                 (int)matrix_r[r1][3],
                 (int)matrix_g[g1][3],
-                (int)matrix_b[b1][3], rgb_format_rgb24, out_ln1[(i2) + 3]);
+                (int)matrix_b[b1][3], *(k->out_fmt), out_ln1[(i2) + 3]);
             
         PACK_RGB(
                 (int)matrix_r[r1][4],
                 (int)matrix_g[g1][4],
-                (int)matrix_b[b1][4], rgb_format_rgb24, out_ln2[(i2) + 0]);
+                (int)matrix_b[b1][4], *(k->out_fmt), out_ln2[(i2) + 0]);
                 
         PACK_RGB(
                 (int)matrix_r[r1][5],
                 (int)matrix_g[g1][5],
-                (int)matrix_b[b1][5], rgb_format_rgb24, out_ln2[(i2) + 1]);
+                (int)matrix_b[b1][5], *(k->out_fmt), out_ln2[(i2) + 1]);
                 
         PACK_RGB(
                 (int)matrix_r[r1][6],
                 (int)matrix_g[g1][6],
-                (int)matrix_b[b1][6], rgb_format_rgb24, out_ln2[(i2) + 2]);
+                (int)matrix_b[b1][6], *(k->out_fmt), out_ln2[(i2) + 2]);
             
         PACK_RGB(
                 (int)matrix_r[r1][7],
                 (int)matrix_g[g1][7],
-                (int)matrix_b[b1][7], rgb_format_rgb24, out_ln2[(i2) + 3]);
+                (int)matrix_b[b1][7], *(k->out_fmt), out_ln2[(i2) + 3]);
             
         PACK_RGB(
                 (int)matrix_r[r1][8],
                 (int)matrix_g[g1][8],
-                (int)matrix_b[b1][8], rgb_format_rgb24, out_ln3[(i2) + 0]);
+                (int)matrix_b[b1][8], *(k->out_fmt), out_ln3[(i2) + 0]);
                 
         PACK_RGB(
                 (int)matrix_r[r1][9],
                 (int)matrix_g[g1][9],
-                (int)matrix_b[b1][9], rgb_format_rgb24, out_ln3[(i2) + 1]);
+                (int)matrix_b[b1][9], *(k->out_fmt), out_ln3[(i2) + 1]);
                 
         PACK_RGB(
                 (int)matrix_r[r1][10],
                 (int)matrix_g[g1][10],
-                (int)matrix_b[b1][10], rgb_format_rgb24, out_ln3[(i2) + 2]);
+                (int)matrix_b[b1][10], *(k->out_fmt), out_ln3[(i2) + 2]);
                 
         PACK_RGB(
                 (int)matrix_r[r1][11],
                 (int)matrix_g[g1][11],
-                (int)matrix_b[b1][11], rgb_format_rgb24, out_ln3[(i2) + 3]);
+                (int)matrix_b[b1][11], *(k->out_fmt), out_ln3[(i2) + 3]);
             
         PACK_RGB(
                 (int)matrix_r[r1][12],
                 (int)matrix_g[g1][12],
-                (int)matrix_b[b1][12], rgb_format_rgb24, out_ln4[(i2) + 0]);
+                (int)matrix_b[b1][12], *(k->out_fmt), out_ln4[(i2) + 0]);
                 
         PACK_RGB(
                 (int)matrix_r[r1][13],
                 (int)matrix_g[g1][13],
-                (int)matrix_b[b1][13], rgb_format_rgb24, out_ln4[(i2) + 1]);
+                (int)matrix_b[b1][13], *(k->out_fmt), out_ln4[(i2) + 1]);
                 
         PACK_RGB(
                 (int)matrix_r[r1][14],
                 (int)matrix_g[g1][14],
-                (int)matrix_b[b1][14], rgb_format_rgb24, out_ln4[(i2) + 2]);
+                (int)matrix_b[b1][14], *(k->out_fmt), out_ln4[(i2) + 2]);
             
         PACK_RGB(
                 (int)matrix_r[r1][15],
                 (int)matrix_g[g1][15],
-                (int)matrix_b[b1][15], rgb_format_rgb24, out_ln4[(i2) + 3]);
+                (int)matrix_b[b1][15], *(k->out_fmt), out_ln4[(i2) + 3]);
 
         i1 += 1;
         i2 += 4;
