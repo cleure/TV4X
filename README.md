@@ -31,3 +31,13 @@ The scaling filter performs rather well for the amount of work it does, however,
       this code by using data structures that are more CPU cache friendly, as random lookups
       plus copy is where the biggest bottleneck is.
 
+
+TODO List
+=========
+
+- Add something to allow certain features to be turned on/off, so that performance can be tuned to the underlying hardware.
+    - YIQ Processing
+        - YIQ Blur
+        - YIQ Event Burst (Average/Simple/Off)
+        - Luma/Chroma
+        - Scale RGB up/down

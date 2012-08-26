@@ -37,10 +37,12 @@ void inline rgb_to_yiq(
     
     UNPACK_RGB(r, g, b, *fmt, rgb);
     
-    // Scale up
-    r *= (float)rgb_format_rgb24.r_mask / (float)fmt->r_mask;
-    g *= (float)rgb_format_rgb24.g_mask / (float)fmt->g_mask;
-    b *= (float)rgb_format_rgb24.b_mask / (float)fmt->b_mask;
+    #ifdef TV4X_YIQ_SCALE_RGB
+        // Scale up
+        r *= (float)rgb_format_rgb24.r_mask / (float)fmt->r_mask;
+        g *= (float)rgb_format_rgb24.g_mask / (float)fmt->g_mask;
+        b *= (float)rgb_format_rgb24.b_mask / (float)fmt->b_mask;
+    #endif
     
     *y = (yiq_in_matrix[0][0] * r) +
          (yiq_in_matrix[0][1] * g) +
@@ -94,14 +96,16 @@ void inline yiq_to_rgb_unpacked(
         (yiq_out_matrix[2][2] * q);
     
     // Round
-    r += 0.5;
-    g += 0.5;
-    b += 0.5;
+    //r += 0.5;
+    //g += 0.5;
+    //b += 0.5;
     
     // Scale down
-    r *= ((float)fmt->r_mask / (float)rgb_format_rgb24.r_mask);
-    g *= ((float)fmt->g_mask / (float)rgb_format_rgb24.g_mask);
-    b *= ((float)fmt->b_mask / (float)rgb_format_rgb24.b_mask);
+    #ifdef TV4X_YIQ_SCALE_RGB
+        r *= ((float)fmt->r_mask / (float)rgb_format_rgb24.r_mask);
+        g *= ((float)fmt->g_mask / (float)rgb_format_rgb24.g_mask);
+        b *= ((float)fmt->b_mask / (float)rgb_format_rgb24.b_mask);
+    #endif
     
     // Clamp
     CLAMP(r, 0, fmt->r_mask);

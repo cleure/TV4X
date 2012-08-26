@@ -300,28 +300,8 @@ static inline void tv4x_process_line(
     sum_q = cur_q;
     
     for (x = 0; x < in_width; x++) {
-        /*
-        
-void rgb_to_yiq(
-        struct rgb_format *fmt,
-        uint32_t rgb,
-        float *y,
-        float *i,
-        float *q);
-
-void yiq_to_rgb_unpacked(
-        struct rgb_format *fmt,
-        uint8_t *ro,
-        uint8_t *go,
-        uint8_t *bo,
-        float y,
-        float i,
-        float q);
-        
-        */
-    
+        // Convert to YIQ
         rgb_to_yiq(k->in_fmt, in[i1], &tmp_y, &tmp_i, &tmp_q);
-        
         cur_y = tmp_y;
         
         // I Events
@@ -344,17 +324,30 @@ void yiq_to_rgb_unpacked(
             sum_q_len++;
         }
         
-        // Blur
-        work_y = (prev_y * 0.2f) + (next_y * 0.2f) + (cur_y * 0.6f);
-        work_i = (prev_i * 0.2f) + (next_i * 0.2f) + (cur_i * 0.56f);
-        work_q = (prev_q * 0.2f) + (next_q * 0.2f) + (cur_q * 0.56f);
+        #ifdef TV4X_YIQ_BLUR_ENABLED
+            // Blur
+            work_y = (prev_y * 0.2f) + (next_y * 0.2f) + (cur_y * 0.6f);
+            work_i = (prev_i * 0.2f) + (next_i * 0.2f) + (cur_i * 0.56f);
+            work_q = (prev_q * 0.2f) + (next_q * 0.2f) + (cur_q * 0.56f);
+            
+            // Set prev YIQ
+            prev_y = cur_y;
+            prev_i = cur_i;
+            prev_q = cur_q;
         
-        /**
-        
-        TODO:  Don't use rgb24_to_yiq. Use format agnostic version instead,
-               or promote formats to RGB24 automatically.
-        
-        **/
+            // Get next YIQ
+            if (i1 + 2 < in_width) {
+                rgb_to_yiq(k->in_fmt, in[i1+2], &next_y, &next_i, &next_q);
+            } else {
+                next_y = tmp_y;
+                next_i = tmp_i;
+                next_q = tmp_q;
+            }
+        #else
+            work_y = cur_y;
+            work_i = cur_i;
+            work_q = cur_q;
+        #endif
         
         // Deluma
         work_y *= k->deluma;
@@ -362,20 +355,6 @@ void yiq_to_rgb_unpacked(
         // Dechroma
         work_i *= k->dechroma;
         work_q *= k->dechroma;
-        
-        // Set prev YIQ
-        prev_y = cur_y;
-        prev_i = cur_i;
-        prev_q = cur_q;
-        
-        // Get next YIQ
-        if (i1 + 2 < in_width) {
-            rgb_to_yiq(k->in_fmt, in[i1+2], &next_y, &next_i, &next_q);
-        } else {
-            next_y = tmp_y;
-            next_i = tmp_i;
-            next_q = tmp_q;
-        }
         
         // Get RGB from YIQ
         yiq_to_rgb_unpacked(k->in_fmt, &r1, &g1, &b1, work_y, work_i, work_q);
