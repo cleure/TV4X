@@ -32,19 +32,19 @@ float tv4x_crt_slotmask_rgb[2][16][3] = {{
 
 // Slot Mask Layout
 float tv4x_crt_slotmask[2][16] = {{
-        1.25f, 1.00f, 1.25f, 1.00f,
-        1.30f, 1.00f, 1.30f, 1.00f,
+        1.25f, 1.25f, 1.25f, 1.00f,
+        1.30f, 1.30f, 1.30f, 1.00f,
         //1.00f, 0.90f, 1.00f, 0.90f,
         //0.90f, 1.00f, 0.90f, 1.00f
-        0.85f, 0.75f, 0.85f, 0.75f,
-        0.75f, 0.85f, 0.75f, 0.85f
+        0.85f, 0.85f, 0.85f, 0.75f,
+        0.85f, 0.85f, 0.85f, 0.75f
     }, {
-        1.00f, 1.25f, 1.00f, 1.25f,
-        1.00f, 1.30f, 1.00f, 1.30f,
+        1.25f, 1.00f, 1.25f, 1.25f,
+        1.30f, 1.00f, 1.30f, 1.30f,
         //0.90f, 1.00f, 0.90f, 1.00f,
         //1.00f, 0.90f, 1.00f, 0.90f,
-        0.75f, 0.85f, 0.75f, 0.85f,
-        0.85f, 0.75f, 0.85f, 0.75f
+        0.85f, 0.75f, 0.85f, 0.85f,
+        0.85f, 0.75f, 0.85f, 0.85f
 }};
 
 int tv4x_init_kernel(
@@ -146,8 +146,8 @@ int tv4x_init_kernel(
             r2 *= (float)out_fmt->r_mask / (float)in_fmt->r_mask;
             
             // RGB Matrix
-            r1 += crt_rgb[0][x][0] * ((float)in_fmt->r_mask / (float)out_fmt->r_mask);
-            r2 += crt_rgb[1][x][0] * ((float)in_fmt->r_mask / (float)out_fmt->r_mask);
+            r1 += crt_rgb[0][x][0] * ((float)out_fmt->r_mask / 255.0f);
+            r2 += crt_rgb[1][x][0] * ((float)out_fmt->r_mask / 255.0f);
             
             // Scanline brightness/contrast
             if (x >= 8) {
@@ -182,8 +182,8 @@ int tv4x_init_kernel(
             g2 *= (float)out_fmt->g_mask / (float)in_fmt->g_mask;
             
             // RGB Matrix
-            g1 += crt_rgb[0][x][1] * ((float)in_fmt->g_mask / (float)out_fmt->g_mask);
-            g2 += crt_rgb[1][x][1] * ((float)in_fmt->g_mask / (float)out_fmt->g_mask);
+            g1 += crt_rgb[0][x][1] * ((float)out_fmt->g_mask / 255.0f);
+            g2 += crt_rgb[1][x][1] * ((float)out_fmt->g_mask / 255.0f);
             
             // Scanline brightness/contrast
             if (x >= 8) {
@@ -218,8 +218,8 @@ int tv4x_init_kernel(
             b2 *= (float)out_fmt->b_mask / (float)in_fmt->b_mask;
             
             // RGB Matrix
-            b1 += crt_rgb[0][x][2] * ((float)in_fmt->b_mask / (float)out_fmt->b_mask);
-            b2 += crt_rgb[1][x][2] * ((float)in_fmt->b_mask / (float)out_fmt->b_mask);
+            b1 += crt_rgb[0][x][2] * ((float)out_fmt->b_mask / 255.0f);
+            b2 += crt_rgb[1][x][2] * ((float)out_fmt->b_mask / 255.0f);
             
             // Scanline brightness/contrast
             if (x >= 8) {

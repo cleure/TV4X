@@ -144,6 +144,11 @@ int rgb24_to_png(uint32_t *buffer, int width, int height, char *path)
         for (x = 0; x < width; x++) {
             // Unpack pixels
             UNPACK_RGB(r, g, b, rgb_format_rgb24, *in);
+            //UNPACK_RGB(r, g, b, rgb_format_rgb15, *in);
+            
+            //r *= (255/31);
+            //g *= (255/31);
+            //b *= (255/31);
             
             // Copy
             row_pointers[y][(x * 3) + 0] = r;
