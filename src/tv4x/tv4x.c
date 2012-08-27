@@ -12,10 +12,10 @@
 #endif
 
 // Various Setups
-struct tv4x_setup tv4x_setup_coax =       {0.8f, 0.5f, 0.2f};
-struct tv4x_setup tv4x_setup_composite =  {1.0f, 0.6f, 0.3f};
-struct tv4x_setup tv4x_setup_svideo =     {1.0f, 0.7f, 0.7f};
-struct tv4x_setup tv4x_setup_rgb =        {1.0f, 1.0f, 1.0f};
+struct tv4x_setup tv4x_setup_coax =       {250.0f, 128.0f, 96.0f};
+struct tv4x_setup tv4x_setup_composite =  {256.0f, 192.0f, 128.0f};
+struct tv4x_setup tv4x_setup_svideo =     {256.0f, 224.0f, 192.0f};
+struct tv4x_setup tv4x_setup_rgb =        {256.0f, 256.0f, 256.0f};
 
 // Slot Mask RGB Matrix
 float tv4x_crt_slotmask_rgb[2][16][3] = {{
@@ -82,11 +82,15 @@ int tv4x_init_kernel(
     k->q_events = malloc(sizeof(*(k->q_events)) * max_width);
     if (!k->q_events) return 0;
     
+    float y_step = setup->y_events / (float)max_width;
+    float i_step = setup->i_events / (float)max_width;
+    float q_step = setup->q_events / (float)max_width;
+    
     for (i = 0; i < max_width; i++) {
         // Accumulators
-        y_accum += setup->y_step;
-        i_accum += setup->i_step;
-        q_accum += setup->q_step;
+        y_accum += y_step;
+        i_accum += i_step;
+        q_accum += q_step;
         
         // Set Y Events
         if (y_accum >= 1.0f) {

@@ -2,9 +2,9 @@
 #include <stdint.h>
 
 struct tv4x_setup {
-    float y_step;
-    float i_step;
-    float q_step;
+    float y_events;
+    float i_events;
+    float q_events;
 };
 
 extern struct tv4x_setup tv4x_setup_coax;
