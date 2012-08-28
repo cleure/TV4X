@@ -19,14 +19,14 @@ struct tv4x_setup tv4x_setup_rgb =        {256.0f, 256.0f, 256.0f};
 
 // Slot Mask RGB Matrix
 float tv4x_crt_slotmask_rgb[2][16][3] = {{
-        {10.0f, -10.0f, -10.0f}, {-10.0f, 10.0f, -10.0f}, {-10.0f, -10.0f, 10.0f}, {0.0f, 0.0f, 0.0f},
-        {10.0f, -10.0f, -10.0f}, {-10.0f, 10.0f, -10.0f}, {-10.0f, -10.0f, 10.0f}, {0.0f, 0.0f, 0.0f},
-        {10.0f, -10.0f, -10.0f}, {-10.0f, 10.0f, -10.0f}, {-10.0f, -10.0f, 10.0f}, {0.0f, 0.0f, 0.0f},
+        {5.0f, -5.0f, -5.0f}, {-5.0f, 5.0f, -5.0f}, {-5.0f, -5.0f, 5.0f}, {0.0f, 0.0f, 0.0f},
+        {5.0f, -5.0f, -5.0f}, {-5.0f, 5.0f, -5.0f}, {-5.0f, -5.0f, 5.0f}, {0.0f, 0.0f, 0.0f},
+        {5.0f, -5.0f, -5.0f}, {-5.0f, 5.0f, -5.0f}, {-5.0f, -5.0f, 5.0f}, {0.0f, 0.0f, 0.0f},
         {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f},
 }, {
-        {-10.0f, -10.0f, 10.0f}, {0.0f, 0.0f, 0.0f}, {10.0f, -10.0f, -10.0f}, {-10.0f, 10.0f, -10.0f},
-        {-10.0f, -10.0f, 10.0f}, {0.0f, 0.0f, 0.0f}, {10.0f, -10.0f, -10.0f}, {-10.0f, 10.0f, -10.0f},
-        {-10.0f, -10.0f, 10.0f}, {0.0f, 0.0f, 0.0f}, {10.0f, -10.0f, -10.0f}, {-10.0f, 10.0f, -10.0f},
+        {-5.0f, -5.0f, 5.0f}, {0.0f, 0.0f, 0.0f}, {5.0f, -5.0f, -5.0f}, {-5.0f, 5.0f, -5.0f},
+        {-5.0f, -5.0f, 5.0f}, {0.0f, 0.0f, 0.0f}, {5.0f, -5.0f, -5.0f}, {-5.0f, 5.0f, -5.0f},
+        {-5.0f, -5.0f, 5.0f}, {0.0f, 0.0f, 0.0f}, {5.0f, -5.0f, -5.0f}, {-5.0f, 5.0f, -5.0f},
         {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f},
 }};
 
@@ -34,15 +34,11 @@ float tv4x_crt_slotmask_rgb[2][16][3] = {{
 float tv4x_crt_slotmask[2][16] = {{
         1.25f, 1.25f, 1.25f, 1.00f,
         1.30f, 1.30f, 1.30f, 1.00f,
-        //1.00f, 0.90f, 1.00f, 0.90f,
-        //0.90f, 1.00f, 0.90f, 1.00f
         0.85f, 0.85f, 0.85f, 0.75f,
         0.85f, 0.85f, 0.85f, 0.75f
     }, {
         1.25f, 1.00f, 1.25f, 1.25f,
         1.30f, 1.00f, 1.30f, 1.30f,
-        //0.90f, 1.00f, 0.90f, 1.00f,
-        //1.00f, 0.90f, 1.00f, 0.90f,
         0.85f, 0.75f, 0.85f, 0.85f,
         0.85f, 0.75f, 0.85f, 0.85f
 }};
@@ -87,7 +83,7 @@ int tv4x_init_kernel(
     float q_step = setup->q_events / (float)max_width;
     
     for (i = 0; i < max_width; i++) {
-        // Accumulators
+        // Accumulators (ala Bresenham's)
         y_accum += y_step;
         i_accum += i_step;
         q_accum += q_step;
@@ -328,11 +324,17 @@ static inline void tv4x_process_line(
             sum_q_len++;
         }
         
+        /*
+        
+        TODO: Make blur factors controlable.
+        
+        */
+        
         #ifdef TV4X_YIQ_BLUR_ENABLED
             // Blur
             work_y = (prev_y * 0.2f) + (next_y * 0.2f) + (cur_y * 0.6f);
-            work_i = (prev_i * 0.2f) + (next_i * 0.2f) + (cur_i * 0.56f);
-            work_q = (prev_q * 0.2f) + (next_q * 0.2f) + (cur_q * 0.56f);
+            work_i = (prev_i * 0.2f) + (next_i * 0.2f) + (cur_i * 0.6f);
+            work_q = (prev_q * 0.2f) + (next_q * 0.2f) + (cur_q * 0.6f);
             
             // Set prev YIQ
             prev_y = cur_y;
