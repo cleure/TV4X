@@ -1,6 +1,10 @@
 #pragma once
 #include <stdint.h>
 
+#ifdef __cplusplus
+    extern "C" {
+#endif
+
 /*
     Common packed video formats are as follows:
     
@@ -101,3 +105,7 @@ void rgb_convert(
 #define RGB24_GET_B RGB24_B_SHIFT & RGB24_B_MASK
 
 #define RGB24_STORAGE uint32_t
+
+#ifdef __cplusplus
+    }
+#endif

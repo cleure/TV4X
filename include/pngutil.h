@@ -1,4 +1,7 @@
 #pragma once
+#ifdef __cplusplus
+    extern "C" {
+#endif
 
 // Get RGB byte buffer from PNG file
 uint8_t *buffer_from_png(char *path, int *width, int *height);
@@ -14,3 +17,7 @@ uint32_t *rgb24_from_png(const char *path, int *width, int *height);
 
 // Write PNG file from RGB24 Buffer
 int rgb24_to_png(uint32_t *buffer, int width, int height, char *path);
+
+#ifdef __cplusplus
+    }
+#endif

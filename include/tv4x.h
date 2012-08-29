@@ -1,6 +1,10 @@
 #pragma once
 #include <stdint.h>
 
+#ifdef __cplusplus
+    extern "C" {
+#endif
+
 struct tv4x_setup {
     float y_events;
     float i_events;
@@ -64,3 +68,7 @@ void tv4x_process(
             uint32_t *out,
             int in_width,
             int in_height);
+
+#ifdef __cplusplus
+    }
+#endif

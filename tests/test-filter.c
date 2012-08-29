@@ -27,23 +27,20 @@ int main(int argc, char **argv)
     
     // Kernel, data pointers
     struct tv4x_kernel kern;
-    uint32_t *in, *out, *rgb15;
+    uint32_t *in, *out;
     
     // Read file
     in = rgb24_from_png(argv[1], &width, &height);
-    rgb15 = malloc(sizeof(*rgb15) * width * height);
     
     // Convert to RGB15
     rgb_convert(
         &rgb_format_rgb24,
         &rgb_format_rgb15,
-        in,
-        rgb15,
+        in, in,
         width * height);
     
     out_width = width * 4;
     out_height = height * 4;
-    
     out = malloc(sizeof(*out) * width * height * 4 * 4);
     
     // Initialize kernel
@@ -62,18 +59,10 @@ int main(int argc, char **argv)
     start_time = clock();
     tv4x_process(
             &kern,
-            rgb15,
+            in,
             out,
             width,
             height);
-
-    /*******************************************************************************
-    
-    TODO: Make filter work on multiple RGB formats... The code that does addition
-          to the YIQ data needs to be refactored somehow, as it will cause errors
-          for anything that isn't RGB24.
-    
-    *******************************************************************************/
         
     end_time = clock();
     printf("Time: %f\n", (end_time - start_time) / (float)CLOCKS_PER_SEC);
@@ -85,7 +74,6 @@ int main(int argc, char **argv)
     tv4x_free_kernel(&kern);
     free(in);
     free(out);
-    free(rgb15);
 
     exit(0);
 }

@@ -1,6 +1,10 @@
 #pragma once
 #include <stdint.h>
 
+#ifdef __cplusplus
+    extern "C" {
+#endif
+
 // Convert RGB15/16/24 to YIQ.
 void rgb_to_yiq(
         struct rgb_format *fmt,
@@ -18,3 +22,7 @@ void yiq_to_rgb_unpacked(
         float y,
         float i,
         float q);
+
+#ifdef __cplusplus
+    }
+#endif

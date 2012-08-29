@@ -37,6 +37,7 @@ TODO List
         - Luma/Chroma
         - Scale RGB up/down
 - Perhaps YIQ math could be simplified?
+- Support RGB16 and RGB24 Input?... RGB24 would require 32MB of memory :-/
 - Explore ways to make tv4x_process_line branchless.
 - Rename external facing data types and functions, so they're all prefixed with "tv4x_".
 - Experiment with 2x and 3x scaling.
