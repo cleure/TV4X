@@ -223,7 +223,7 @@ static inline void tv4x_process_line(
             struct tv4x_kernel *k,
             uint32_t *in,
             uint32_t *out,
-            uint32_t rgb_matrix[32768][16],
+            uint32_t (*rgb_matrix)[32768][16],
             int in_width,
             int out_width,
             int y) {
@@ -272,6 +272,12 @@ static inline void tv4x_process_line(
     TODO: More shadow masks
     
     */
+    
+    /* The previous 2 and current YIQ values are held in these "weighed" arrays,
+       for the blur function. These use a "rolling index" based on the value of x,
+       so that there is no branching (ie: index = x % 3). This also has the
+       benefit of automatically overwriting the least recent value, so that there
+       are fewer MOV instructions being executed. */
     
     float weights[3] = {0.2f, 0.2f, 0.2f};
     float weighted_y[3] = {cur_y, cur_y, cur_y};
@@ -349,25 +355,25 @@ static inline void tv4x_process_line(
         
         PACK_RGB(r1, g1, b1, rgb_format_rgb15, packed);
         
-        out_ln1[i2+0] = rgb_matrix[packed][0];
-        out_ln1[i2+1] = rgb_matrix[packed][1];
-        out_ln1[i2+2] = rgb_matrix[packed][2];
-        out_ln1[i2+3] = rgb_matrix[packed][3];
+        out_ln1[i2+0] = (*rgb_matrix)[packed][0];
+        out_ln1[i2+1] = (*rgb_matrix)[packed][1];
+        out_ln1[i2+2] = (*rgb_matrix)[packed][2];
+        out_ln1[i2+3] = (*rgb_matrix)[packed][3];
         
-        out_ln2[i2+0] = rgb_matrix[packed][4];
-        out_ln2[i2+1] = rgb_matrix[packed][5];
-        out_ln2[i2+2] = rgb_matrix[packed][6];
-        out_ln2[i2+3] = rgb_matrix[packed][7];
+        out_ln2[i2+0] = (*rgb_matrix)[packed][4];
+        out_ln2[i2+1] = (*rgb_matrix)[packed][5];
+        out_ln2[i2+2] = (*rgb_matrix)[packed][6];
+        out_ln2[i2+3] = (*rgb_matrix)[packed][7];
         
-        out_ln3[i2+0] = rgb_matrix[packed][8];
-        out_ln3[i2+1] = rgb_matrix[packed][9];
-        out_ln3[i2+2] = rgb_matrix[packed][10];
-        out_ln3[i2+3] = rgb_matrix[packed][11];
+        out_ln3[i2+0] = (*rgb_matrix)[packed][8];
+        out_ln3[i2+1] = (*rgb_matrix)[packed][9];
+        out_ln3[i2+2] = (*rgb_matrix)[packed][10];
+        out_ln3[i2+3] = (*rgb_matrix)[packed][11];
         
-        out_ln4[i2+0] = rgb_matrix[packed][12];
-        out_ln4[i2+1] = rgb_matrix[packed][13];
-        out_ln4[i2+2] = rgb_matrix[packed][14];
-        out_ln4[i2+3] = rgb_matrix[packed][15];
+        out_ln4[i2+0] = (*rgb_matrix)[packed][12];
+        out_ln4[i2+1] = (*rgb_matrix)[packed][13];
+        out_ln4[i2+2] = (*rgb_matrix)[packed][14];
+        out_ln4[i2+3] = (*rgb_matrix)[packed][15];
 
         i1 += 1;
         i2 += 4;
@@ -390,7 +396,7 @@ void tv4x_process(
             k,
             in,
             out,
-            k->rgb_matrix_od,
+            &(k->rgb_matrix_od),
             in_width,
             out_width,
             y);
@@ -402,7 +408,7 @@ void tv4x_process(
             k,
             in,
             out,
-            k->rgb_matrix_ev,
+            &(k->rgb_matrix_ev),
             in_width,
             out_width,
             y);
