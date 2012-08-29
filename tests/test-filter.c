@@ -52,8 +52,8 @@ int main(int argc, char **argv)
             &rgb_format_rgb15,
             &rgb_format_rgb24,
             &tv4x_setup_composite,
-            tv4x_crt_slotmask,
-            tv4x_crt_slotmask_rgb,
+            tv4x_crt_silly,
+            tv4x_crt_silly_phosphor,
             0.96f,
             0.9f,
             width);
