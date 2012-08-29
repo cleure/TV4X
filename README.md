@@ -15,7 +15,9 @@ Build requires libz and libpng to compile/link.
 Once the build is complete, you can process PNG files with the program "tests/test-filter", which will save the processed file to "out.png". Several 240p test images are included in the input-images folder. Example:
 
 bin/compile.sh
+
 tests/test-filter input-images/sonic2_2.png
+
 open out.png
 
 Performance
