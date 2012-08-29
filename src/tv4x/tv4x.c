@@ -127,19 +127,30 @@ int tv4x_init_kernel(
                            ((100.0f - scan_brightness) / 200.0f) *
                            (1.0f - scan_slope);
     
-    // Red
-    for (i = 0; i < (in_fmt->r_mask+1); i++) {
+    int r, g, b;
+    uint32_t in_rgb, out_rgb1, out_rgb2;
+    
+    /*
+    
+    FIXME: In format now MUST be RGB15...
+    
+    */
+    
+    for (r = 0; r < 32; r++) {
+    for (g = 0; g < 32; g++) {
+    for (b = 0; b < 32; b++) {
         for (x = 0; x < 16; x++) {
-            r1 = i;
-            r2 = i;
+            // Red
+            r1 = r;
+            r2 = r;
             
             // Run through matrices
             r1 *= crt_mask[0][x];
             r2 *= crt_mask[1][x];
             
             // Scale
-            r1 *= (float)out_fmt->r_mask / (float)in_fmt->r_mask;
-            r2 *= (float)out_fmt->r_mask / (float)in_fmt->r_mask;
+            r1 *= (float)out_fmt->r_mask / 31.0f;
+            r2 *= (float)out_fmt->r_mask / 31.0f;
             
             // RGB Matrix
             r1 += crt_rgb[0][x][0] * ((float)out_fmt->r_mask / 255.0f);
@@ -157,25 +168,17 @@ int tv4x_init_kernel(
             CLAMP(r1, 0.0f, (float)out_fmt->r_mask);
             CLAMP(r2, 0.0f, (float)out_fmt->r_mask);
             
-            // Copy
-            k->r_matrix_ev[i][x] = r1;
-            k->r_matrix_od[i][x] = r2;
-        }
-    }
-    
-    // Green
-    for (i = 0; i < (in_fmt->g_mask+1); i++) {
-        for (x = 0; x < 16; x++) {
-            g1 = i;
-            g2 = i;
+            // Green
+            g1 = g;
+            g2 = g;
             
             // Run through matrices
             g1 *= crt_mask[0][x];
             g2 *= crt_mask[1][x];
             
             // Scale
-            g1 *= (float)out_fmt->g_mask / (float)in_fmt->g_mask;
-            g2 *= (float)out_fmt->g_mask / (float)in_fmt->g_mask;
+            g1 *= (float)out_fmt->g_mask / 31.0f;
+            g2 *= (float)out_fmt->g_mask / 31.0f;
             
             // RGB Matrix
             g1 += crt_rgb[0][x][1] * ((float)out_fmt->g_mask / 255.0f);
@@ -183,35 +186,27 @@ int tv4x_init_kernel(
             
             // Scanline brightness/contrast
             if (x >= 8) {
-                r1 = ((scan_slope * (1.0f / (float)out_fmt->g_mask)) *
-                     r1 + scan_intersect) * (float)out_fmt->g_mask;
-                r2 = ((scan_slope * (1.0f / (float)out_fmt->g_mask)) *
-                     r2 + scan_intersect) * (float)out_fmt->g_mask;
+                g1 = ((scan_slope * (1.0f / (float)out_fmt->g_mask)) *
+                     g1 + scan_intersect) * (float)out_fmt->g_mask;
+                g2 = ((scan_slope * (1.0f / (float)out_fmt->g_mask)) *
+                     g2 + scan_intersect) * (float)out_fmt->g_mask;
             }
             
             // Clamp
             CLAMP(g1, 0.0f, (float)out_fmt->g_mask);
             CLAMP(g2, 0.0f, (float)out_fmt->g_mask);
             
-            // Copy
-            k->g_matrix_ev[i][x] = g1;
-            k->g_matrix_od[i][x] = g2;
-        }
-    }
-    
-    // Blue
-    for (i = 0; i < (in_fmt->b_mask+1); i++) {
-        for (x = 0; x < 16; x++) {
-            b1 = i;
-            b2 = i;
+            // Blue
+            b1 = b;
+            b2 = b;
             
             // Run through matrices
             b1 *= crt_mask[0][x];
             b2 *= crt_mask[1][x];
             
             // Scale
-            b1 *= (float)out_fmt->b_mask / (float)in_fmt->b_mask;
-            b2 *= (float)out_fmt->b_mask / (float)in_fmt->b_mask;
+            b1 *= (float)out_fmt->b_mask / 31.0f;
+            b2 *= (float)out_fmt->b_mask / 31.0f;
             
             // RGB Matrix
             b1 += crt_rgb[0][x][2] * ((float)out_fmt->b_mask / 255.0f);
@@ -219,21 +214,26 @@ int tv4x_init_kernel(
             
             // Scanline brightness/contrast
             if (x >= 8) {
-                r1 = ((scan_slope * (1.0f / (float)out_fmt->b_mask)) *
-                     r1 + scan_intersect) * (float)out_fmt->b_mask;
-                r2 = ((scan_slope * (1.0f / (float)out_fmt->b_mask)) *
-                     r2 + scan_intersect) * (float)out_fmt->b_mask;
+                b1 = ((scan_slope * (1.0f / (float)out_fmt->b_mask)) *
+                     b1 + scan_intersect) * (float)out_fmt->b_mask;
+                b2 = ((scan_slope * (1.0f / (float)out_fmt->b_mask)) *
+                     b2 + scan_intersect) * (float)out_fmt->b_mask;
             }
             
             // Clamp
             CLAMP(b1, 0.0f, (float)out_fmt->b_mask);
             CLAMP(b2, 0.0f, (float)out_fmt->b_mask);
             
+            // Get as packed
+            PACK_RGB(r, g, b, rgb_format_rgb15, in_rgb);
+            PACK_RGB((int)r1, (int)g1, (int)b1, *out_fmt, out_rgb1);
+            PACK_RGB((int)r2, (int)g2, (int)b2, *out_fmt, out_rgb2);
+            
             // Copy
-            k->b_matrix_ev[i][x] = b1;
-            k->b_matrix_od[i][x] = b2;
+            k->rgb_matrix_ev[in_rgb][x] = out_rgb1;
+            k->rgb_matrix_od[in_rgb][x] = out_rgb2;
         }
-    }
+    }}}
     
     return 1;
 }
@@ -249,9 +249,7 @@ static inline void tv4x_process_line(
             struct tv4x_kernel *k,
             uint32_t *in,
             uint32_t *out,
-            float matrix_r[256][16],
-            float matrix_g[256][16],
-            float matrix_b[256][16],
+            uint32_t rgb_matrix[32768][16],
             int in_width,
             int out_width,
             int y) {
@@ -264,8 +262,6 @@ static inline void tv4x_process_line(
     float tmp_y, tmp_i, tmp_q;
     float work_y, work_i, work_q;
     float cur_y, cur_i, cur_q;
-    float prev_y, prev_i, prev_q;
-    float next_y, next_i, next_q;
     float /*sum_y,*/ sum_i, sum_q;
     
     // Output pointers
@@ -285,19 +281,30 @@ static inline void tv4x_process_line(
     
     // Initial YIQ values
     rgb_to_yiq(k->in_fmt, in[i1], &cur_y, &cur_i, &cur_q);
-    rgb_to_yiq(k->in_fmt, in[i1+1], &next_y, &next_i, &next_q);
-        
-    //cur_y = (cur_y + next_y) / 2.0f;
-    cur_i = (cur_i + next_i) / 2.0f;
-    cur_q = (cur_q + next_q) / 2.0f;
-    
-    prev_y = cur_y;
-    prev_i = cur_i;
-    prev_q = cur_q;
     
     //sum_y = cur_y;
     sum_i = cur_i;
     sum_q = cur_q;
+    
+    /*
+    
+    TODO: Multiple blur methods:
+            - Blur prev + cur + next
+            - Blur previous1 + previous2 + cur
+            - Blur YIQ events
+    
+    TODO: Make blur factors controlable.
+    TODO: Brightess / Contrast controls
+    TODO: More shadow masks
+    
+    */
+    
+    float weights[3] = {0.2f, 0.2f, 0.2f};
+    float weighted_y[3] = {cur_y, cur_y, cur_y};
+    float weighted_i[3] = {cur_i, cur_i, cur_i};
+    float weighted_q[3] = {cur_q, cur_q, cur_q};
+    int weighted_index = 0;
+    uint32_t packed;
     
     for (x = 0; x < in_width; x++) {
         // Convert to YIQ
@@ -324,31 +331,26 @@ static inline void tv4x_process_line(
             sum_q_len++;
         }
         
-        /*
-        
-        TODO: Make blur factors controlable.
-        
-        */
-        
         #ifdef TV4X_YIQ_BLUR_ENABLED
-            // Blur
-            work_y = (prev_y * 0.2f) + (next_y * 0.2f) + (cur_y * 0.6f);
-            work_i = (prev_i * 0.2f) + (next_i * 0.2f) + (cur_i * 0.6f);
-            work_q = (prev_q * 0.2f) + (next_q * 0.2f) + (cur_q * 0.6f);
+            weighted_index = x % 3;
+            weighted_y[weighted_index] = cur_y;
+            weighted_i[weighted_index] = cur_i;
+            weighted_q[weighted_index] = cur_q;
+            weights[weighted_index] = 0.6f;
             
-            // Set prev YIQ
-            prev_y = cur_y;
-            prev_i = cur_i;
-            prev_q = cur_q;
+            work_y = (weighted_y[0] * weights[0]) +
+                     (weighted_y[1] * weights[1]) +
+                     (weighted_y[2] * weights[2]);
+            
+            work_i = (weighted_i[0] * weights[0]) +
+                     (weighted_i[1] * weights[1]) +
+                     (weighted_i[2] * weights[2]);
+                     
+            work_q = (weighted_q[0] * weights[0]) +
+                     (weighted_q[1] * weights[1]) +
+                     (weighted_q[2] * weights[2]);
         
-            // Get next YIQ
-            if (i1 + 2 < in_width) {
-                rgb_to_yiq(k->in_fmt, in[i1+2], &next_y, &next_i, &next_q);
-            } else {
-                next_y = tmp_y;
-                next_i = tmp_i;
-                next_q = tmp_q;
-            }
+            weights[weighted_index] = 0.2f;
         #else
             work_y = cur_y;
             work_i = cur_i;
@@ -364,87 +366,34 @@ static inline void tv4x_process_line(
         
         // Get RGB from YIQ
         yiq_to_rgb_unpacked(k->in_fmt, &r1, &g1, &b1, work_y, work_i, work_q);
-    
-        // Pack pixels into output, using lookup matrices
-        PACK_RGB(
-                (int)matrix_r[r1][0],
-                (int)matrix_g[g1][0],
-                (int)matrix_b[b1][0], *(k->out_fmt), out_ln1[i2]);
-                
-        PACK_RGB(
-                (int)matrix_r[r1][1],
-                (int)matrix_g[g1][1],
-                (int)matrix_b[b1][1], *(k->out_fmt), out_ln1[(i2) + 1]);
-            
-        PACK_RGB(
-                (int)matrix_r[r1][2],
-                (int)matrix_g[g1][2],
-                (int)matrix_b[b1][2], *(k->out_fmt), out_ln1[(i2) + 2]);
-            
-        PACK_RGB(
-                (int)matrix_r[r1][3],
-                (int)matrix_g[g1][3],
-                (int)matrix_b[b1][3], *(k->out_fmt), out_ln1[(i2) + 3]);
-            
-        PACK_RGB(
-                (int)matrix_r[r1][4],
-                (int)matrix_g[g1][4],
-                (int)matrix_b[b1][4], *(k->out_fmt), out_ln2[(i2) + 0]);
-                
-        PACK_RGB(
-                (int)matrix_r[r1][5],
-                (int)matrix_g[g1][5],
-                (int)matrix_b[b1][5], *(k->out_fmt), out_ln2[(i2) + 1]);
-                
-        PACK_RGB(
-                (int)matrix_r[r1][6],
-                (int)matrix_g[g1][6],
-                (int)matrix_b[b1][6], *(k->out_fmt), out_ln2[(i2) + 2]);
-            
-        PACK_RGB(
-                (int)matrix_r[r1][7],
-                (int)matrix_g[g1][7],
-                (int)matrix_b[b1][7], *(k->out_fmt), out_ln2[(i2) + 3]);
-            
-        PACK_RGB(
-                (int)matrix_r[r1][8],
-                (int)matrix_g[g1][8],
-                (int)matrix_b[b1][8], *(k->out_fmt), out_ln3[(i2) + 0]);
-                
-        PACK_RGB(
-                (int)matrix_r[r1][9],
-                (int)matrix_g[g1][9],
-                (int)matrix_b[b1][9], *(k->out_fmt), out_ln3[(i2) + 1]);
-                
-        PACK_RGB(
-                (int)matrix_r[r1][10],
-                (int)matrix_g[g1][10],
-                (int)matrix_b[b1][10], *(k->out_fmt), out_ln3[(i2) + 2]);
-                
-        PACK_RGB(
-                (int)matrix_r[r1][11],
-                (int)matrix_g[g1][11],
-                (int)matrix_b[b1][11], *(k->out_fmt), out_ln3[(i2) + 3]);
-            
-        PACK_RGB(
-                (int)matrix_r[r1][12],
-                (int)matrix_g[g1][12],
-                (int)matrix_b[b1][12], *(k->out_fmt), out_ln4[(i2) + 0]);
-                
-        PACK_RGB(
-                (int)matrix_r[r1][13],
-                (int)matrix_g[g1][13],
-                (int)matrix_b[b1][13], *(k->out_fmt), out_ln4[(i2) + 1]);
-                
-        PACK_RGB(
-                (int)matrix_r[r1][14],
-                (int)matrix_g[g1][14],
-                (int)matrix_b[b1][14], *(k->out_fmt), out_ln4[(i2) + 2]);
-            
-        PACK_RGB(
-                (int)matrix_r[r1][15],
-                (int)matrix_g[g1][15],
-                (int)matrix_b[b1][15], *(k->out_fmt), out_ln4[(i2) + 3]);
+        
+        #ifdef TV4X_SCALE_DOWN
+            r1 *= (31.0f / (float)k->in_fmt->r_mask);
+            g1 *= (31.0f / (float)k->in_fmt->g_mask);
+            b1 *= (31.0f / (float)k->in_fmt->b_mask);
+        #endif
+        
+        PACK_RGB(r1, g1, b1, rgb_format_rgb15, packed);
+        
+        out_ln1[i2+0] = rgb_matrix[packed][0];
+        out_ln1[i2+1] = rgb_matrix[packed][1];
+        out_ln1[i2+2] = rgb_matrix[packed][2];
+        out_ln1[i2+3] = rgb_matrix[packed][3];
+        
+        out_ln2[i2+0] = rgb_matrix[packed][4];
+        out_ln2[i2+1] = rgb_matrix[packed][5];
+        out_ln2[i2+2] = rgb_matrix[packed][6];
+        out_ln2[i2+3] = rgb_matrix[packed][7];
+        
+        out_ln3[i2+0] = rgb_matrix[packed][8];
+        out_ln3[i2+1] = rgb_matrix[packed][9];
+        out_ln3[i2+2] = rgb_matrix[packed][10];
+        out_ln3[i2+3] = rgb_matrix[packed][11];
+        
+        out_ln4[i2+0] = rgb_matrix[packed][12];
+        out_ln4[i2+1] = rgb_matrix[packed][13];
+        out_ln4[i2+2] = rgb_matrix[packed][14];
+        out_ln4[i2+3] = rgb_matrix[packed][15];
 
         i1 += 1;
         i2 += 4;
@@ -467,9 +416,7 @@ void tv4x_process(
             k,
             in,
             out,
-            k->r_matrix_od,
-            k->g_matrix_od,
-            k->b_matrix_od,
+            k->rgb_matrix_od,
             in_width,
             out_width,
             y);
@@ -481,9 +428,7 @@ void tv4x_process(
             k,
             in,
             out,
-            k->r_matrix_ev,
-            k->g_matrix_ev,
-            k->b_matrix_ev,
+            k->rgb_matrix_ev,
             in_width,
             out_width,
             y);

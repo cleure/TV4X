@@ -35,13 +35,8 @@ struct tv4x_kernel {
     uint8_t *i_events;
     uint8_t *q_events;
     
-    // RGB Lookup Matrices
-    float r_matrix_ev[256][16];
-    float g_matrix_ev[256][16];
-    float b_matrix_ev[256][16];
-    float r_matrix_od[256][16];
-    float g_matrix_od[256][16];
-    float b_matrix_od[256][16];
+    uint32_t rgb_matrix_ev[32768][16];
+    uint32_t rgb_matrix_od[32768][16];
 };
 
 int tv4x_init_kernel(
