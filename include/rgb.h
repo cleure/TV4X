@@ -1,4 +1,7 @@
 #pragma once
+#ifndef TV4X_RGB_H
+#define TV4X_RGB_H
+
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -27,12 +30,12 @@ struct tv4x_rgb_format {
     uint8_t b_shift;
 };
 
-// Various RGB Formats
+/* Various RGB Formats */
 extern struct tv4x_rgb_format tv4x_rgb_format_rgb15;
 extern struct tv4x_rgb_format tv4x_rgb_format_rgb16;
 extern struct tv4x_rgb_format tv4x_rgb_format_rgb24;
 
-// Convert between RGB formats
+/* Convert between RGB formats */
 void rgb_convert(
                     struct tv4x_rgb_format *in_fmt,
                     struct tv4x_rgb_format *out_fmt,
@@ -40,13 +43,13 @@ void rgb_convert(
                     uint32_t *out,
                     uint32_t size);
 
-// Pack RGB
+/* Pack RGB */
 #define PACK_RGB(r, g, b, fmt, out)\
     (out) =     (r) << (fmt).r_shift |\
                 (g) << (fmt).g_shift |\
                 (b) << (fmt).b_shift;
 
-// Unpack RGB
+/* Unpack RGB */
 #define UNPACK_RGB(r, g, b, fmt, in)\
     (r) =       (in) >> (fmt).r_shift & (fmt).r_mask;\
     (g) =       (in) >> (fmt).g_shift & (fmt).g_mask;\
@@ -108,4 +111,5 @@ void rgb_convert(
 
 #ifdef __cplusplus
     }
+#endif
 #endif

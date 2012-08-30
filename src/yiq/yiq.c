@@ -1,15 +1,14 @@
-#include <math.h>
 #include "rgb.h"
 #include "yiq.h"
 
-// RGB to YIQ Matrix
+/* RGB to YIQ Matrix */
 static const float yiq_in_matrix[3][3] = {
     {0.299f,     0.587f,    0.114f},
     {0.596f,    -0.274f,   -0.322f},
     {0.212f,    -0.523f,    0.311f}
 };
 
-// YIQ to RGB Matrix
+/* YIQ to RGB Matrix */
 static const float yiq_out_matrix[3][3] = {
     {1.0f,      0.956f,     0.621f},
     {1.0f,     -0.272f,    -0.647f},
@@ -26,7 +25,7 @@ static const float yiq_out_matrix[3][3] = {
 * @param    float *q
 * @return   void
 **/
-void inline tv4x_rgb_to_yiq(
+void __inline tv4x_rgb_to_yiq(
         struct tv4x_rgb_format *fmt,
         uint32_t rgb,
         float *y,
@@ -38,7 +37,7 @@ void inline tv4x_rgb_to_yiq(
     UNPACK_RGB(r, g, b, *fmt, rgb);
     
     #ifdef TV4X_YIQ_SCALE_RGB
-        // Scale up
+        /* Scale up */
         r *= (float)tv4x_rgb_format_rgb24.r_mask / (float)fmt->r_mask;
         g *= (float)tv4x_rgb_format_rgb24.g_mask / (float)fmt->g_mask;
         b *= (float)tv4x_rgb_format_rgb24.b_mask / (float)fmt->b_mask;
@@ -69,7 +68,7 @@ void inline tv4x_rgb_to_yiq(
 * @param    float q
 * @return   void
 **/
-void inline tv4x_yiq_to_rgb_unpacked(
+void __inline tv4x_yiq_to_rgb_unpacked(
         struct tv4x_rgb_format *fmt,
         uint8_t *ro,
         uint8_t *go,
@@ -80,34 +79,36 @@ void inline tv4x_yiq_to_rgb_unpacked(
 
     float r, g, b;
     
-    // Get R
+    /* Get R */
     r = (y) +
         (yiq_out_matrix[0][1] * i) +
         (yiq_out_matrix[0][2] * q);
     
-    // Get G
+    /* Get G */
     g = (y) +
         (yiq_out_matrix[1][1] * i) +
         (yiq_out_matrix[1][2] * q);
 
-    // Get B
+    /* Get B */
     b = (y) +
         (yiq_out_matrix[2][1] * i) +
         (yiq_out_matrix[2][2] * q);
     
-    // Round
-    //r += 0.5;
-    //g += 0.5;
-    //b += 0.5;
+    /* Round */
+    /*
+    r += 0.5;
+    g += 0.5;
+    b += 0.5;
+    */
     
-    // Scale down
+    /* Scale down */
     #ifdef TV4X_YIQ_SCALE_RGB
         r *= ((float)fmt->r_mask / (float)tv4x_rgb_format_rgb24.r_mask);
         g *= ((float)fmt->g_mask / (float)tv4x_rgb_format_rgb24.g_mask);
         b *= ((float)fmt->b_mask / (float)tv4x_rgb_format_rgb24.b_mask);
     #endif
     
-    // Clamp
+    /* Clamp */
     CLAMP(r, 0, fmt->r_mask);
     CLAMP(g, 0, fmt->g_mask);
     CLAMP(b, 0, fmt->b_mask);

@@ -1,11 +1,14 @@
 #pragma once
+#ifndef TV4X_YIQ_H
+#define TV4X_YIQ_H
+
 #include <stdint.h>
 
 #ifdef __cplusplus
     extern "C" {
 #endif
 
-// Convert RGB15/16/24 to YIQ.
+/* Convert RGB15/16/24 to YIQ. */
 void tv4x_rgb_to_yiq(
         struct tv4x_rgb_format *fmt,
         uint32_t rgb,
@@ -13,7 +16,7 @@ void tv4x_rgb_to_yiq(
         float *i,
         float *q);
 
-// Convert YIQ to RGB15/16/24, unpacked.
+/* Convert YIQ to RGB15/16/24, unpacked. */
 void tv4x_yiq_to_rgb_unpacked(
         struct tv4x_rgb_format *fmt,
         uint8_t *ro,
@@ -25,4 +28,5 @@ void tv4x_yiq_to_rgb_unpacked(
 
 #ifdef __cplusplus
     }
+#endif
 #endif

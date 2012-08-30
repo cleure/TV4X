@@ -12,24 +12,24 @@ int main(int argc, char **argv)
     int width, height;
     int out_width, out_height;
     
+    /* For benchmarking */
+    clock_t start_time,
+            end_time;
+    
+    /* Kernel, data pointers */
+    struct tv4x_kernel kern;
+    tv4x_in_type *in;
+    tv4x_out_type *out;
+    
     if (argc < 2) {
         fprintf(stderr, "Usage: test-filter <input PNG>\n");
         exit(1);
     }
     
-    // For benchmarking
-    clock_t start_time,
-            end_time;
-    
-    // Kernel, data pointers
-    struct tv4x_kernel kern;
-    tv4x_in_type *in;
-    tv4x_out_type *out;
-    
-    // Read file
+    /* Read file */
     in = rgb24_from_png(argv[1], &width, &height);
     
-    // Convert to RGB15
+    /* Convert to RGB15 */
     rgb_convert(
         &tv4x_rgb_format_rgb24,
         &tv4x_rgb_format_rgb15,
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     out_height = height * 4;
     out = malloc(sizeof(*out) * width * height * 4 * 4);
     
-    // Initialize kernel
+    /* Initialize kernel */
     tv4x_init_kernel(
             &kern,
             &tv4x_rgb_format_rgb15,
@@ -52,7 +52,7 @@ int main(int argc, char **argv)
             0.9f,
             width);
     
-    // Process
+    /* Process */
     start_time = clock();
     tv4x_process(
             &kern,
@@ -66,10 +66,10 @@ int main(int argc, char **argv)
     end_time = clock();
     printf("Time: %f\n", (end_time - start_time) / (float)CLOCKS_PER_SEC);
 
-    // Save
+    /* Save */
     rgb24_to_png(out, out_width, out_height, "out.png");
     
-    // Free
+    /* Free */
     tv4x_free_kernel(&kern);
     free(in);
     free(out);

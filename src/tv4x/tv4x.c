@@ -11,7 +11,7 @@
     static const float PI = 3.141592653589793f;
 #endif
 
-// Various Setups
+/* Various Setups */
 struct tv4x_setup tv4x_setup_coax =       {250.0f, 128.0f, 96.0f};
 struct tv4x_setup tv4x_setup_composite =  {256.0f, 192.0f, 128.0f};
 struct tv4x_setup tv4x_setup_svideo =     {256.0f, 224.0f, 192.0f};
@@ -46,20 +46,47 @@ int tv4x_init_kernel(
         int max_width) {
     
     unsigned int i;
+    
+    /* Accumulators */
     float y_accum = 0.0f,
           i_accum = 0.0f,
           q_accum = 0.0f;
     
-    // Set pointers
+    /* Accumulator Steps */
+    float y_step = setup->y_events / (float)max_width;
+    float i_step = setup->i_events / (float)max_width;
+    float q_step = setup->q_events / (float)max_width;
+    
+    int x;
+    float r1, g1, b1,
+          r2, g2, b2;
+    
+    int r,
+        g,
+        b;
+    
+    uint32_t in_rgb,
+             out_rgb1,
+             out_rgb2;
+    
+    /* Scanline slope/intercept for contrast filter */
+    float scan_slope;
+    float scan_intercept;
+    
+    /* Scanline contrast settings */
+    float scan_brightness = 0.0f;
+    float scan_contrast = 12.0f;
+    
+    /* Set pointers */
     k->in_fmt = in_fmt;
     k->out_fmt = out_fmt;
     k->setup = setup;
     
-    // Deluma / Dechroma
+    /* Deluma / Dechroma */
     k->deluma = deluma;
     k->dechroma = dechroma;
     
-    // Allocate space for YIQ events
+    /* Allocate space for YIQ events */
     k->y_events = malloc(sizeof(*(k->y_events)) * max_width);
     if (!k->y_events) return 0;
     
@@ -69,17 +96,13 @@ int tv4x_init_kernel(
     k->q_events = malloc(sizeof(*(k->q_events)) * max_width);
     if (!k->q_events) return 0;
     
-    float y_step = setup->y_events / (float)max_width;
-    float i_step = setup->i_events / (float)max_width;
-    float q_step = setup->q_events / (float)max_width;
-    
     for (i = 0; i < max_width; i++) {
-        // Accumulators (ala Bresenham's)
+        /* Accumulators (ala Bresenham's) */
         y_accum += y_step;
         i_accum += i_step;
         q_accum += q_step;
         
-        // Set Y Events
+        /* Set Y Events */
         if (y_accum >= 1.0f) {
             k->y_events[i] = 1;
             y_accum -= 1.0f;
@@ -87,7 +110,7 @@ int tv4x_init_kernel(
             k->y_events[i] = 0;
         }
         
-        // Set I Events
+        /* Set I Events */
         if (i_accum >= 1.0f) {
             k->i_events[i] = 1;
             i_accum -= 1.0f;
@@ -95,7 +118,7 @@ int tv4x_init_kernel(
             k->i_events[i] = 0;
         }
         
-        // Set Q Events
+        /* Set Q Events */
         if (q_accum >= 1.0f) {
             k->q_events[i] = 1;
             q_accum -= 1.0f;
@@ -104,27 +127,12 @@ int tv4x_init_kernel(
         }
     }
     
-    int x;
-    float r1, g1, b1,
-          r2, g2, b2;
-    
-    // Scanline slope/intercept for contrast filter
-    float scan_slope;
-    float scan_intercept;
-    
-    // Scanline contrast settings
-    float scan_brightness = 0.0f;
-    float scan_contrast = 12.0f;
-    
-    // Calculate slope/intercept
+    /* Calculate slope/intercept */
     tv4x_calc_slope_intercept(
         scan_brightness,
         scan_contrast,
         &scan_slope,
         &scan_intercept);
-    
-    int r, g, b;
-    uint32_t in_rgb, out_rgb1, out_rgb2;
     
     /*
     
@@ -136,23 +144,23 @@ int tv4x_init_kernel(
     for (g = 0; g < 32; g++) {
     for (b = 0; b < 32; b++) {
         for (x = 0; x < 16; x++) {
-            // Red
+            /* Red */
             r1 = r;
             r2 = r;
             
-            // Run through matrices
+            /* Run through matrices */
             r1 *= crt_mask[0][x];
             r2 *= crt_mask[1][x];
             
-            // Scale
+            /* Scale */
             r1 *= (float)out_fmt->r_mask / 31.0f;
             r2 *= (float)out_fmt->r_mask / 31.0f;
             
-            // RGB Matrix
+            /* RGB Matrix */
             r1 += crt_rgb[0][x][0] * ((float)out_fmt->r_mask / 255.0f);
             r2 += crt_rgb[1][x][0] * ((float)out_fmt->r_mask / 255.0f);
             
-            // Scanline brightness/contrast
+            /* Scanline brightness/contrast */
             if (x >= 8) {
                 r1 = ((scan_slope * (1.0f / (float)out_fmt->r_mask)) *
                      r1 + scan_intercept) * (float)out_fmt->r_mask;
@@ -160,27 +168,27 @@ int tv4x_init_kernel(
                      r2 + scan_intercept) * (float)out_fmt->r_mask;
             }
             
-            // Clamp
+            /* Clamp */
             CLAMP(r1, 0.0f, (float)out_fmt->r_mask);
             CLAMP(r2, 0.0f, (float)out_fmt->r_mask);
             
-            // Green
+            /* Green */
             g1 = g;
             g2 = g;
             
-            // Run through matrices
+            /* Run through matrices */
             g1 *= crt_mask[0][x];
             g2 *= crt_mask[1][x];
             
-            // Scale
+            /* Scale */
             g1 *= (float)out_fmt->g_mask / 31.0f;
             g2 *= (float)out_fmt->g_mask / 31.0f;
             
-            // RGB Matrix
+            /* RGB Matrix */
             g1 += crt_rgb[0][x][1] * ((float)out_fmt->g_mask / 255.0f);
             g2 += crt_rgb[1][x][1] * ((float)out_fmt->g_mask / 255.0f);
             
-            // Scanline brightness/contrast
+            /* Scanline brightness/contrast */
             if (x >= 8) {
                 g1 = ((scan_slope * (1.0f / (float)out_fmt->g_mask)) *
                      g1 + scan_intercept) * (float)out_fmt->g_mask;
@@ -188,27 +196,27 @@ int tv4x_init_kernel(
                      g2 + scan_intercept) * (float)out_fmt->g_mask;
             }
             
-            // Clamp
+            /* Clamp */
             CLAMP(g1, 0.0f, (float)out_fmt->g_mask);
             CLAMP(g2, 0.0f, (float)out_fmt->g_mask);
             
-            // Blue
+            /* Blue */
             b1 = b;
             b2 = b;
             
-            // Run through matrices
+            /* Run through matrices */
             b1 *= crt_mask[0][x];
             b2 *= crt_mask[1][x];
             
-            // Scale
+            /* Scale */
             b1 *= (float)out_fmt->b_mask / 31.0f;
             b2 *= (float)out_fmt->b_mask / 31.0f;
             
-            // RGB Matrix
+            /* RGB Matrix */
             b1 += crt_rgb[0][x][2] * ((float)out_fmt->b_mask / 255.0f);
             b2 += crt_rgb[1][x][2] * ((float)out_fmt->b_mask / 255.0f);
             
-            // Scanline brightness/contrast
+            /* Scanline brightness/contrast */
             if (x >= 8) {
                 b1 = ((scan_slope * (1.0f / (float)out_fmt->b_mask)) *
                      b1 + scan_intercept) * (float)out_fmt->b_mask;
@@ -216,16 +224,16 @@ int tv4x_init_kernel(
                      b2 + scan_intercept) * (float)out_fmt->b_mask;
             }
             
-            // Clamp
+            /* Clamp */
             CLAMP(b1, 0.0f, (float)out_fmt->b_mask);
             CLAMP(b2, 0.0f, (float)out_fmt->b_mask);
             
-            // Get as packed
+            /* Get as packed */
             PACK_RGB(r, g, b, tv4x_rgb_format_rgb15, in_rgb);
             PACK_RGB((int)r1, (int)g1, (int)b1, *out_fmt, out_rgb1);
             PACK_RGB((int)r2, (int)g2, (int)b2, *out_fmt, out_rgb2);
             
-            // Copy
+            /* Copy */
             k->rgb_matrix_ev[in_rgb][x] = out_rgb1;
             k->rgb_matrix_od[in_rgb][x] = out_rgb2;
         }
@@ -241,7 +249,7 @@ void tv4x_free_kernel(struct tv4x_kernel *k)
     free(k->q_events);
 }
 
-static inline void tv4x_process_line(
+static __inline void tv4x_process_line(
             struct tv4x_kernel *k,
             tv4x_in_type *in,
             tv4x_out_type *out,
@@ -256,31 +264,39 @@ static inline void tv4x_process_line(
     int i1, i2;
     uint8_t r1, g1, b1;
     
-    // Work floats
+    /* Work floats */
     float tmp_y, tmp_i, tmp_q;
     float work_y, work_i, work_q;
     float cur_y, cur_i, cur_q;
     float /*sum_y,*/ sum_i, sum_q;
     
-    // Output pointers
+    /* Weighted averages (blur filter) */
+    float weights[3] = {0.2f, 0.2f, 0.2f};
+    float weighted_y[3];
+    float weighted_i[3];
+    float weighted_q[3];
+    int weighted_index = 0;
+    uint32_t packed;
+    
+    /* Output pointers */
     tv4x_out_type *out_ln1 = out;
     tv4x_out_type *out_ln2 = out + (out_width);
     tv4x_out_type *out_ln3 = out + (out_width * 2);
     tv4x_out_type *out_ln4 = out + (out_width * 3);
     
-    // Sums, for averages
+    /* Sums, for averages */
     int /*sum_y_len = 1,*/
         sum_i_len = 1,
         sum_q_len = 1;
 
-    // Indexes
+    /* Indexes */
     i1 = (y * in_pitch);
     i2 = (y * out_pitch);
     
-    // Initial YIQ values
+    /* Initial YIQ values */
     tv4x_rgb_to_yiq(k->in_fmt, in[i1], &cur_y, &cur_i, &cur_q);
     
-    //sum_y = cur_y;
+    /*sum_y = cur_y;*/
     sum_i = cur_i;
     sum_q = cur_q;
     
@@ -303,19 +319,24 @@ static inline void tv4x_process_line(
        benefit of automatically overwriting the least recent value, so that there
        are fewer MOV instructions being executed. */
     
-    float weights[3] = {0.2f, 0.2f, 0.2f};
-    float weighted_y[3] = {cur_y, cur_y, cur_y};
-    float weighted_i[3] = {cur_i, cur_i, cur_i};
-    float weighted_q[3] = {cur_q, cur_q, cur_q};
-    int weighted_index = 0;
-    uint32_t packed;
+    weighted_y[0] = cur_y;
+    weighted_y[1] = cur_y;
+    weighted_y[2] = cur_y;
+    
+    weighted_i[0] = cur_i;
+    weighted_i[1] = cur_i;
+    weighted_i[2] = cur_i;
+    
+    weighted_q[0] = cur_q;
+    weighted_q[1] = cur_q;
+    weighted_q[2] = cur_q;
     
     for (x = 0; x < in_width; x++) {
-        // Convert to YIQ
+        /* Convert to YIQ */
         tv4x_rgb_to_yiq(k->in_fmt, in[i1], &tmp_y, &tmp_i, &tmp_q);
         cur_y = tmp_y;
         
-        // I Events
+        /* I Events */
         if (k->i_events[x]) {
             cur_i = sum_i / (float)sum_i_len;
             sum_i_len = 1;
@@ -325,7 +346,7 @@ static inline void tv4x_process_line(
             sum_i_len++;
         }
         
-        // Q Events
+        /* Q Events */
         if (k->q_events[x]) {
             cur_q = sum_q / (float)sum_q_len;
             sum_q_len = 1;
@@ -361,14 +382,14 @@ static inline void tv4x_process_line(
             work_q = cur_q;
         #endif
         
-        // Deluma
+        /* Deluma */
         work_y *= k->deluma;
         
-        // Dechroma
+        /* Dechroma */
         work_i *= k->dechroma;
         work_q *= k->dechroma;
         
-        // Get RGB from YIQ
+        /* Get RGB from YIQ */
         tv4x_yiq_to_rgb_unpacked(k->in_fmt, &r1, &g1, &b1, work_y, work_i, work_q);
         
         #ifdef TV4X_SCALE_DOWN
@@ -416,7 +437,7 @@ void tv4x_process(
     int out_width = in_width * 4;
     int y;
     
-    // Odd Fields
+    /* Odd Fields */
     for (y = 0; y < in_height; y += 2) {
         tv4x_process_line(
             k,
@@ -430,7 +451,7 @@ void tv4x_process(
             y);
     }
     
-    // Even Fields
+    /* Even Fields */
     for (y = 1; y < in_height; y += 2) {
         tv4x_process_line(
             k,

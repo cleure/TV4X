@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "pngutil.h"
 #include "rgb.h"
 #include "yiq.h"
 

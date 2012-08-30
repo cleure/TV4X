@@ -1,4 +1,7 @@
 #pragma once
+#ifndef TV4X_TV4X_H
+#define TV4X_TV4X_H
+
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -25,31 +28,31 @@ extern struct tv4x_setup tv4x_setup_composite;
 extern struct tv4x_setup tv4x_setup_svideo;
 extern struct tv4x_setup tv4x_setup_rgb;
 
-// CRT Shadow Masks
+/* CRT Shadow Masks */
 extern float tv4x_crt_passthru[2][16];
 extern float tv4x_crt_slotmask[2][16];
 extern float tv4x_crt_scanline[2][16];
 extern float tv4x_crt_silly[2][16];
 
-// CRT Phosphors
+/* CRT Phosphors */
 extern float tv4x_crt_passthru_phosphor[2][16][3];
 extern float tv4x_crt_slotmask_phosphor[2][16][3];
 extern float tv4x_crt_scanline_phosphor[2][16][3];
 extern float tv4x_crt_silly_phosphor[2][16][3];
 
 struct tv4x_kernel {
-    // I/O Formats
+    /* I/O Formats */
     struct tv4x_rgb_format *in_fmt;
     struct tv4x_rgb_format *out_fmt;
     
-    // Setup Type
+    /* Setup Type */
     struct tv4x_setup *setup;
     
-    // Effects
+    /* Effects */
     float deluma;
     float dechroma;
     
-    // Event Map
+    /* Event Map */
     uint8_t *y_events;
     uint8_t *i_events;
     uint8_t *q_events;
@@ -82,4 +85,5 @@ void tv4x_process(
 
 #ifdef __cplusplus
     }
+#endif
 #endif

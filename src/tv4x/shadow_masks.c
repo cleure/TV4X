@@ -11,7 +11,7 @@ new pixel layouts.
 
 */
 
-// Pasthru Phosphor
+/* Pasthru Phosphor */
 float tv4x_crt_passthru_phosphor[2][16][3] = {{
         {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f},
         {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f},
@@ -24,7 +24,7 @@ float tv4x_crt_passthru_phosphor[2][16][3] = {{
         {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f},
 }};
 
-// Passthru Matrix
+/* Passthru Matrix */
 float tv4x_crt_passthru[2][16] = {{
         1.00f, 1.00f, 1.00f, 1.00f,
         1.00f, 1.00f, 1.00f, 1.00f,
@@ -37,7 +37,7 @@ float tv4x_crt_passthru[2][16] = {{
         1.00f, 1.00f, 1.00f, 1.00f,
 }};
 
-// Slot Mask RGB Phosphor Layout
+/* Slot Mask RGB Phosphor Layout */
 float tv4x_crt_slotmask_phosphor[2][16][3] = {{
         {5.0f, -5.0f, -5.0f}, {-5.0f, 5.0f, -5.0f}, {-5.0f, -5.0f, 5.0f}, {0.0f, 0.0f, 0.0f},
         {5.0f, -5.0f, -5.0f}, {-5.0f, 5.0f, -5.0f}, {-5.0f, -5.0f, 5.0f}, {0.0f, 0.0f, 0.0f},
@@ -50,7 +50,7 @@ float tv4x_crt_slotmask_phosphor[2][16][3] = {{
         {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f},
 }};
 
-// Slot Mask Matrix
+/* Slot Mask Matrix */
 float tv4x_crt_slotmask[2][16] = {{
         1.25f, 1.25f, 1.25f, 1.00f,
         1.30f, 1.30f, 1.30f, 1.00f,
@@ -63,7 +63,7 @@ float tv4x_crt_slotmask[2][16] = {{
         0.85f, 0.75f, 0.85f, 0.85f
 }};
 
-// Scanline Phosphor
+/* Scanline Phosphor */
 float tv4x_crt_scanline_phosphor[2][16][3] = {{
         {5.0f, -5.0f, -5.0f}, {-5.0f, 5.0f, -5.0f}, {-5.0f, -5.0f, 5.0f}, {0.0f, 0.0f, 0.0f},
         {5.0f, -5.0f, -5.0f}, {-5.0f, 5.0f, -5.0f}, {-5.0f, -5.0f, 5.0f}, {0.0f, 0.0f, 0.0f},
@@ -76,7 +76,7 @@ float tv4x_crt_scanline_phosphor[2][16][3] = {{
         {-5.0f, -5.0f, 5.0f}, {0.0f, 0.0f, 0.0f}, {5.0f, -5.0f, -5.0f}, {-5.0f, 5.0f, -5.0f},
 }};
 
-// Scanline Matrix
+/* Scanline Matrix */
 float tv4x_crt_scanline[2][16] = {{
         1.20f, 1.20f, 1.20f, 1.20f,
         1.30f, 1.30f, 1.30f, 1.30f,
@@ -89,7 +89,7 @@ float tv4x_crt_scanline[2][16] = {{
         0.70f, 0.70f, 0.70f, 0.70f,
 }};
 
-// Silly Phosphor
+/* Silly Phosphor */
 float tv4x_crt_silly_phosphor[2][16][3] = {{
         {0.0f, 0.0f, 0.0f}, {10.0f, -10.0f, -10.0f}, {10.0f, -10.0f, -10.0f}, {0.0f, 0.0f, 0.0f},
         {-10.0f, 10.0f, -10.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, {-10.0f, 10.0f, -10.0f},
@@ -102,7 +102,7 @@ float tv4x_crt_silly_phosphor[2][16][3] = {{
         {0.0f, 0.0f, 0.0f}, {-10.0f, -10.0f, 10.0f}, {-10.0f, -10.0f, 10.0f}, {0.0f, 0.0f, 0.0f},
 }};
 
-// Silly Matrix
+/* Silly Matrix */
 float tv4x_crt_silly[2][16] = {{
         0.50f, 1.20f, 1.20f, 0.50f,
         1.20f, 0.80f, 0.50f, 1.20f,

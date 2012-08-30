@@ -10,7 +10,7 @@ int main(int argc, char **argv)
     
     in[0] = 16 << RGB15_R_SHIFT | 12 << RGB15_G_SHIFT | 31 << RGB15_B_SHIFT;
     
-    //rgb_convert_15to24_init(&config);
+    /*rgb_convert_15to24_init(&config);*/
     rgb_convert(&tv4x_rgb_format_rgb15, &tv4x_rgb_format_rgb24, (uint32_t *)in, out, 1);
     
     r = in[0] >> RGB15_GET_R;
