@@ -8,7 +8,7 @@
 #include "tv4x.h"
 
 #ifndef PI
-  #define PI 3.141592653589793f
+    static const float PI = 3.141592653589793f;
 #endif
 
 // Various Setups
@@ -16,6 +16,23 @@ struct tv4x_setup tv4x_setup_coax =       {250.0f, 128.0f, 96.0f};
 struct tv4x_setup tv4x_setup_composite =  {256.0f, 192.0f, 128.0f};
 struct tv4x_setup tv4x_setup_svideo =     {256.0f, 224.0f, 192.0f};
 struct tv4x_setup tv4x_setup_rgb =        {256.0f, 256.0f, 256.0f};
+
+/*
+* Simple function that calculates slope/intercept for the brightness/constrast
+* filter.
+*
+* @param    float brightness    - Brightness parameter
+* @param    float contrast      - Contrast parameter
+* @param    float *slope        - Calculated slope placed in this
+* @param    float *intercept    - Calculated intercept placed in this.
+*/
+static void tv4x_calc_slope_intercept(float brightness, float contrast, float *slope, float *intercept)
+{
+    *slope = tan((PI * (contrast / 100.0f + 1.0f) / 4.0f));
+    *intercept = (brightness / 100.0f) +
+                 ((100.0f - brightness) / 200.0f) *
+                 (1.0f - *slope);
+}
 
 int tv4x_init_kernel(
         struct tv4x_kernel *k,
@@ -91,15 +108,20 @@ int tv4x_init_kernel(
     float r1, g1, b1,
           r2, g2, b2;
     
-    // Scanline settings
+    // Scanline slope/intercept for contrast filter
+    float scan_slope;
+    float scan_intercept;
+    
+    // Scanline contrast settings
     float scan_brightness = 0.0f;
     float scan_contrast = 12.0f;
     
-    // Calculate scanline slope/intercept for contrast filter
-    float scan_slope = tan((PI * (scan_contrast / 100.0f + 1.0f) / 4.0f));
-    float scan_intersect = (scan_brightness / 100.0f) +
-                           ((100.0f - scan_brightness) / 200.0f) *
-                           (1.0f - scan_slope);
+    // Calculate slope/intercept
+    tv4x_calc_slope_intercept(
+        scan_brightness,
+        scan_contrast,
+        &scan_slope,
+        &scan_intercept);
     
     int r, g, b;
     uint32_t in_rgb, out_rgb1, out_rgb2;
@@ -133,9 +155,9 @@ int tv4x_init_kernel(
             // Scanline brightness/contrast
             if (x >= 8) {
                 r1 = ((scan_slope * (1.0f / (float)out_fmt->r_mask)) *
-                     r1 + scan_intersect) * (float)out_fmt->r_mask;
+                     r1 + scan_intercept) * (float)out_fmt->r_mask;
                 r2 = ((scan_slope * (1.0f / (float)out_fmt->r_mask)) *
-                     r2 + scan_intersect) * (float)out_fmt->r_mask;
+                     r2 + scan_intercept) * (float)out_fmt->r_mask;
             }
             
             // Clamp
@@ -161,9 +183,9 @@ int tv4x_init_kernel(
             // Scanline brightness/contrast
             if (x >= 8) {
                 g1 = ((scan_slope * (1.0f / (float)out_fmt->g_mask)) *
-                     g1 + scan_intersect) * (float)out_fmt->g_mask;
+                     g1 + scan_intercept) * (float)out_fmt->g_mask;
                 g2 = ((scan_slope * (1.0f / (float)out_fmt->g_mask)) *
-                     g2 + scan_intersect) * (float)out_fmt->g_mask;
+                     g2 + scan_intercept) * (float)out_fmt->g_mask;
             }
             
             // Clamp
@@ -189,9 +211,9 @@ int tv4x_init_kernel(
             // Scanline brightness/contrast
             if (x >= 8) {
                 b1 = ((scan_slope * (1.0f / (float)out_fmt->b_mask)) *
-                     b1 + scan_intersect) * (float)out_fmt->b_mask;
+                     b1 + scan_intercept) * (float)out_fmt->b_mask;
                 b2 = ((scan_slope * (1.0f / (float)out_fmt->b_mask)) *
-                     b2 + scan_intersect) * (float)out_fmt->b_mask;
+                     b2 + scan_intercept) * (float)out_fmt->b_mask;
             }
             
             // Clamp
@@ -221,9 +243,11 @@ void tv4x_free_kernel(struct tv4x_kernel *k)
 
 static inline void tv4x_process_line(
             struct tv4x_kernel *k,
-            uint32_t *in,
-            uint32_t *out,
+            tv4x_in_type *in,
+            tv4x_out_type *out,
             uint32_t (*rgb_matrix)[32768][16],
+            int in_pitch,
+            int out_pitch,
             int in_width,
             int out_width,
             int y) {
@@ -239,10 +263,10 @@ static inline void tv4x_process_line(
     float /*sum_y,*/ sum_i, sum_q;
     
     // Output pointers
-    uint32_t *out_ln1 = out;
-    uint32_t *out_ln2 = out + (out_width);
-    uint32_t *out_ln3 = out + (out_width * 2);
-    uint32_t *out_ln4 = out + (out_width * 3);
+    tv4x_out_type *out_ln1 = out;
+    tv4x_out_type *out_ln2 = out + (out_width);
+    tv4x_out_type *out_ln3 = out + (out_width * 2);
+    tv4x_out_type *out_ln4 = out + (out_width * 3);
     
     // Sums, for averages
     int /*sum_y_len = 1,*/
@@ -250,11 +274,11 @@ static inline void tv4x_process_line(
         sum_q_len = 1;
 
     // Indexes
-    i1 = (y * in_width);
-    i2 = (y * out_width * 4);
+    i1 = (y * in_pitch);
+    i2 = (y * out_pitch);
     
     // Initial YIQ values
-    rgb_to_yiq(k->in_fmt, in[i1], &cur_y, &cur_i, &cur_q);
+    tv4x_rgb_to_yiq(k->in_fmt, in[i1], &cur_y, &cur_i, &cur_q);
     
     //sum_y = cur_y;
     sum_i = cur_i;
@@ -288,7 +312,7 @@ static inline void tv4x_process_line(
     
     for (x = 0; x < in_width; x++) {
         // Convert to YIQ
-        rgb_to_yiq(k->in_fmt, in[i1], &tmp_y, &tmp_i, &tmp_q);
+        tv4x_rgb_to_yiq(k->in_fmt, in[i1], &tmp_y, &tmp_i, &tmp_q);
         cur_y = tmp_y;
         
         // I Events
@@ -345,7 +369,7 @@ static inline void tv4x_process_line(
         work_q *= k->dechroma;
         
         // Get RGB from YIQ
-        yiq_to_rgb_unpacked(k->in_fmt, &r1, &g1, &b1, work_y, work_i, work_q);
+        tv4x_yiq_to_rgb_unpacked(k->in_fmt, &r1, &g1, &b1, work_y, work_i, work_q);
         
         #ifdef TV4X_SCALE_DOWN
             r1 *= (31.0f / (float)k->in_fmt->r_mask);
@@ -382,8 +406,10 @@ static inline void tv4x_process_line(
 
 void tv4x_process(
             struct tv4x_kernel *k,
-            uint32_t *in,
-            uint32_t *out,
+            tv4x_in_type *in,
+            tv4x_out_type *out,
+            int in_pitch,
+            int out_pitch,
             int in_width,
             int in_height) {
     
@@ -397,6 +423,8 @@ void tv4x_process(
             in,
             out,
             &(k->rgb_matrix_od),
+            in_pitch,
+            out_pitch,
             in_width,
             out_width,
             y);
@@ -409,6 +437,8 @@ void tv4x_process(
             in,
             out,
             &(k->rgb_matrix_ev),
+            in_pitch,
+            out_pitch,
             in_width,
             out_width,
             y);

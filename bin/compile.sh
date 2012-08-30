@@ -19,7 +19,9 @@ done
 OBJECTS=`find src -type f -name "*.o"`
 for i in $TESTS
 do
+    obj=`echo $i | sed -e s/".c$"/".o"/`
     name=`echo $i | cut -d\. -f1`
     echo "Building $name"
-    $CC $CFLAGS $OPTIONS $OBJECTS $LIBS $i -o $name
+    $CC $CFLAGS $OPTIONS $i -c -o $obj
+    $CC $CFLAGS $OPTIONS $OBJECTS $LIBS $obj -o $name
 done

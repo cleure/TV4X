@@ -26,7 +26,7 @@ static const float yiq_out_matrix[3][3] = {
 * @param    float *q
 * @return   void
 **/
-void inline rgb_to_yiq(
+void inline tv4x_rgb_to_yiq(
         struct rgb_format *fmt,
         uint32_t rgb,
         float *y,
@@ -69,7 +69,7 @@ void inline rgb_to_yiq(
 * @param    float q
 * @return   void
 **/
-void inline yiq_to_rgb_unpacked(
+void inline tv4x_yiq_to_rgb_unpacked(
         struct rgb_format *fmt,
         uint8_t *ro,
         uint8_t *go,
@@ -81,17 +81,17 @@ void inline yiq_to_rgb_unpacked(
     float r, g, b;
     
     // Get R
-    r = (yiq_out_matrix[0][0] * y) +
+    r = (y) +
         (yiq_out_matrix[0][1] * i) +
         (yiq_out_matrix[0][2] * q);
     
     // Get G
-    g = (yiq_out_matrix[1][0] * y) +
+    g = (y) +
         (yiq_out_matrix[1][1] * i) +
         (yiq_out_matrix[1][2] * q);
 
     // Get B
-    b = (yiq_out_matrix[2][0] * y) +
+    b = (y) +
         (yiq_out_matrix[2][1] * i) +
         (yiq_out_matrix[2][2] * q);
     

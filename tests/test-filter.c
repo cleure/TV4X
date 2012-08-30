@@ -7,10 +7,6 @@
 #include "tv4x.h"
 #include "pngutil.h"
 
-#ifndef PI
-  #define PI 3.141592653589793f
-#endif
-
 int main(int argc, char **argv)
 {
     int width, height;
@@ -27,7 +23,8 @@ int main(int argc, char **argv)
     
     // Kernel, data pointers
     struct tv4x_kernel kern;
-    uint32_t *in, *out;
+    tv4x_in_type *in;
+    tv4x_out_type *out;
     
     // Read file
     in = rgb24_from_png(argv[1], &width, &height);
@@ -61,6 +58,8 @@ int main(int argc, char **argv)
             &kern,
             in,
             out,
+            width,
+            width*4*4,
             width,
             height);
         

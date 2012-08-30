@@ -5,6 +5,15 @@
     extern "C" {
 #endif
 
+/* Input/Output Data Types */
+#ifndef tv4x_in_type
+    #define tv4x_in_type uint32_t
+#endif
+
+#ifndef tv4x_out_type
+    #define tv4x_out_type uint32_t
+#endif
+
 struct tv4x_setup {
     float y_events;
     float i_events;
@@ -64,8 +73,10 @@ void tv4x_free_kernel(struct tv4x_kernel *k);
 
 void tv4x_process(
             struct tv4x_kernel *k,
-            uint32_t *in,
-            uint32_t *out,
+            tv4x_in_type *in,
+            tv4x_out_type *out,
+            int in_pitch,
+            int out_pitch,
             int in_width,
             int in_height);
 
