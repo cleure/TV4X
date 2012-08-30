@@ -27,7 +27,7 @@ static const float yiq_out_matrix[3][3] = {
 * @return   void
 **/
 void inline tv4x_rgb_to_yiq(
-        struct rgb_format *fmt,
+        struct tv4x_rgb_format *fmt,
         uint32_t rgb,
         float *y,
         float *i,
@@ -39,9 +39,9 @@ void inline tv4x_rgb_to_yiq(
     
     #ifdef TV4X_YIQ_SCALE_RGB
         // Scale up
-        r *= (float)rgb_format_rgb24.r_mask / (float)fmt->r_mask;
-        g *= (float)rgb_format_rgb24.g_mask / (float)fmt->g_mask;
-        b *= (float)rgb_format_rgb24.b_mask / (float)fmt->b_mask;
+        r *= (float)tv4x_rgb_format_rgb24.r_mask / (float)fmt->r_mask;
+        g *= (float)tv4x_rgb_format_rgb24.g_mask / (float)fmt->g_mask;
+        b *= (float)tv4x_rgb_format_rgb24.b_mask / (float)fmt->b_mask;
     #endif
     
     *y = (yiq_in_matrix[0][0] * r) +
@@ -70,7 +70,7 @@ void inline tv4x_rgb_to_yiq(
 * @return   void
 **/
 void inline tv4x_yiq_to_rgb_unpacked(
-        struct rgb_format *fmt,
+        struct tv4x_rgb_format *fmt,
         uint8_t *ro,
         uint8_t *go,
         uint8_t *bo,
@@ -102,9 +102,9 @@ void inline tv4x_yiq_to_rgb_unpacked(
     
     // Scale down
     #ifdef TV4X_YIQ_SCALE_RGB
-        r *= ((float)fmt->r_mask / (float)rgb_format_rgb24.r_mask);
-        g *= ((float)fmt->g_mask / (float)rgb_format_rgb24.g_mask);
-        b *= ((float)fmt->b_mask / (float)rgb_format_rgb24.b_mask);
+        r *= ((float)fmt->r_mask / (float)tv4x_rgb_format_rgb24.r_mask);
+        g *= ((float)fmt->g_mask / (float)tv4x_rgb_format_rgb24.g_mask);
+        b *= ((float)fmt->b_mask / (float)tv4x_rgb_format_rgb24.b_mask);
     #endif
     
     // Clamp

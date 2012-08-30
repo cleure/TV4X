@@ -72,7 +72,7 @@ uint32_t *rgb24_from_png(const char *path, int *width, int *height)
                         g = row_pointers[y][(x * channels) + 1],
                         b = row_pointers[y][(x * channels) + 2];
             
-            PACK_RGB(r, g, b, rgb_format_rgb24, *out);
+            PACK_RGB(r, g, b, tv4x_rgb_format_rgb24, *out);
             out++;
         }
     }
@@ -143,8 +143,8 @@ int rgb24_to_png(uint32_t *buffer, int width, int height, char *path)
         
         for (x = 0; x < width; x++) {
             // Unpack pixels
-            UNPACK_RGB(r, g, b, rgb_format_rgb24, *in);
-            //UNPACK_RGB(r, g, b, rgb_format_rgb15, *in);
+            UNPACK_RGB(r, g, b, tv4x_rgb_format_rgb24, *in);
+            //UNPACK_RGB(r, g, b, tv4x_rgb_format_rgb15, *in);
             
             //r *= (255/31);
             //g *= (255/31);

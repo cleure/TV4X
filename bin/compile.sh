@@ -14,6 +14,10 @@ do
     obj=`echo $i | sed -e s/".c$"/".o"/`
     echo "Compiling $i"
     $CC $CFLAGS $OPTIONS $i -c -o $obj
+    if [ "$?" -ne "0" ]; then
+        echo "Error Compiling: $i"
+        exit $?
+    fi
 done
 
 OBJECTS=`find src -type f -name "*.o"`
@@ -23,5 +27,14 @@ do
     name=`echo $i | cut -d\. -f1`
     echo "Building $name"
     $CC $CFLAGS $OPTIONS $i -c -o $obj
+    if [ "$?" -ne "0" ]; then
+        echo "Error Compiling: $i"
+        exit $?
+    fi
+    
     $CC $CFLAGS $OPTIONS $OBJECTS $LIBS $obj -o $name
+    if [ "$?" -ne "0" ]; then
+        echo "Error Linking: $name"
+        exit $?
+    fi
 done

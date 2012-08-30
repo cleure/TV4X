@@ -2,7 +2,7 @@
 #include "rgb.h"
 
 // RGB15 Format Definition
-struct rgb_format rgb_format_rgb15 = {
+struct tv4x_rgb_format tv4x_rgb_format_rgb15 = {
     RGB15_R_MASK,           // r_mask
     RGB15_G_MASK,           // g_mask
     RGB15_B_MASK,           // b_mask
@@ -13,7 +13,7 @@ struct rgb_format rgb_format_rgb15 = {
 };
 
 // RGB16 Format Definition
-struct rgb_format rgb_format_rgb16 = {
+struct tv4x_rgb_format tv4x_rgb_format_rgb16 = {
     RGB16_R_MASK,           // r_mask
     RGB16_G_MASK,           // g_mask
     RGB16_B_MASK,           // b_mask
@@ -24,7 +24,7 @@ struct rgb_format rgb_format_rgb16 = {
 };
 
 // RGB24 Format Definition
-struct rgb_format rgb_format_rgb24 = {
+struct tv4x_rgb_format tv4x_rgb_format_rgb24 = {
     RGB24_R_MASK,           // r_mask
     RGB24_G_MASK,           // g_mask
     RGB24_B_MASK,           // b_mask
@@ -44,8 +44,8 @@ struct rgb_format rgb_format_rgb24 = {
 * @return   void
 **/
 void rgb_convert(
-                    struct rgb_format *in_fmt,
-                    struct rgb_format *out_fmt,
+                    struct tv4x_rgb_format *in_fmt,
+                    struct tv4x_rgb_format *out_fmt,
                     uint32_t *in,
                     uint32_t *out,
                     uint32_t size) {

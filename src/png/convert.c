@@ -24,7 +24,7 @@ uint32_t *png_buf_to_rgb24(uint8_t *in, int width, int height)
         g = *in++;
         b = *in++;
         
-        PACK_RGB(r, g, b, rgb_format_rgb24, *out);
+        PACK_RGB(r, g, b, tv4x_rgb_format_rgb24, *out);
         out++;
     }
   

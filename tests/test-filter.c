@@ -31,8 +31,8 @@ int main(int argc, char **argv)
     
     // Convert to RGB15
     rgb_convert(
-        &rgb_format_rgb24,
-        &rgb_format_rgb15,
+        &tv4x_rgb_format_rgb24,
+        &tv4x_rgb_format_rgb15,
         in, in,
         width * height);
     
@@ -43,8 +43,8 @@ int main(int argc, char **argv)
     // Initialize kernel
     tv4x_init_kernel(
             &kern,
-            &rgb_format_rgb15,
-            &rgb_format_rgb24,
+            &tv4x_rgb_format_rgb15,
+            &tv4x_rgb_format_rgb24,
             &tv4x_setup_composite,
             tv4x_crt_silly,
             tv4x_crt_silly_phosphor,

@@ -36,8 +36,8 @@ static void tv4x_calc_slope_intercept(float brightness, float contrast, float *s
 
 int tv4x_init_kernel(
         struct tv4x_kernel *k,
-        struct rgb_format *in_fmt,
-        struct rgb_format *out_fmt,
+        struct tv4x_rgb_format *in_fmt,
+        struct tv4x_rgb_format *out_fmt,
         struct tv4x_setup *setup,
         float crt_mask[2][16],
         float crt_rgb[2][16][3],
@@ -221,7 +221,7 @@ int tv4x_init_kernel(
             CLAMP(b2, 0.0f, (float)out_fmt->b_mask);
             
             // Get as packed
-            PACK_RGB(r, g, b, rgb_format_rgb15, in_rgb);
+            PACK_RGB(r, g, b, tv4x_rgb_format_rgb15, in_rgb);
             PACK_RGB((int)r1, (int)g1, (int)b1, *out_fmt, out_rgb1);
             PACK_RGB((int)r2, (int)g2, (int)b2, *out_fmt, out_rgb2);
             
@@ -377,7 +377,7 @@ static inline void tv4x_process_line(
             b1 *= (31.0f / (float)k->in_fmt->b_mask);
         #endif
         
-        PACK_RGB(r1, g1, b1, rgb_format_rgb15, packed);
+        PACK_RGB(r1, g1, b1, tv4x_rgb_format_rgb15, packed);
         
         out_ln1[i2+0] = (*rgb_matrix)[packed][0];
         out_ln1[i2+1] = (*rgb_matrix)[packed][1];

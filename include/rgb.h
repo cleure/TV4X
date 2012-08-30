@@ -17,7 +17,7 @@
 */
 
 /* Packed RGB Format. */
-struct rgb_format {
+struct tv4x_rgb_format {
     uint8_t r_mask;
     uint8_t g_mask;
     uint8_t b_mask;
@@ -28,14 +28,14 @@ struct rgb_format {
 };
 
 // Various RGB Formats
-extern struct rgb_format rgb_format_rgb15;
-extern struct rgb_format rgb_format_rgb16;
-extern struct rgb_format rgb_format_rgb24;
+extern struct tv4x_rgb_format tv4x_rgb_format_rgb15;
+extern struct tv4x_rgb_format tv4x_rgb_format_rgb16;
+extern struct tv4x_rgb_format tv4x_rgb_format_rgb24;
 
 // Convert between RGB formats
 void rgb_convert(
-                    struct rgb_format *in_fmt,
-                    struct rgb_format *out_fmt,
+                    struct tv4x_rgb_format *in_fmt,
+                    struct tv4x_rgb_format *out_fmt,
                     uint32_t *in,
                     uint32_t *out,
                     uint32_t size);

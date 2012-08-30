@@ -39,8 +39,8 @@ extern float tv4x_crt_silly_phosphor[2][16][3];
 
 struct tv4x_kernel {
     // I/O Formats
-    struct rgb_format *in_fmt;
-    struct rgb_format *out_fmt;
+    struct tv4x_rgb_format *in_fmt;
+    struct tv4x_rgb_format *out_fmt;
     
     // Setup Type
     struct tv4x_setup *setup;
@@ -60,8 +60,8 @@ struct tv4x_kernel {
 
 int tv4x_init_kernel(
         struct tv4x_kernel *k,
-        struct rgb_format *in_fmt,
-        struct rgb_format *out_fmt,
+        struct tv4x_rgb_format *in_fmt,
+        struct tv4x_rgb_format *out_fmt,
         struct tv4x_setup *setup,
         float crt_mask[2][16],
         float crt_rgb[2][16][3],
