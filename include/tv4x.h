@@ -17,6 +17,16 @@
     #define tv4x_out_type uint32_t
 #endif
 
+#if defined(_MSC_VER)
+    #define TV4X_INLINE __forceinline
+#elif defined(__GNUC__)
+    #define TV4X_INLINE __inline
+#elif defined(__clang__)
+    #define TV4X_INLINE __inline
+#else
+    #define TV4X_INLINE
+#endif
+
 struct tv4x_setup {
     float y_events;
     float i_events;

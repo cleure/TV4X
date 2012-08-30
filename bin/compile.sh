@@ -13,6 +13,7 @@ for i in $SOURCES
 do
     obj=`echo $i | sed -e s/".c$"/".o"/`
     echo "Compiling $i"
+    
     $CC $CFLAGS $OPTIONS $i -c -o $obj
     if [ "$?" -ne "0" ]; then
         echo "Error Compiling: $i"
@@ -26,6 +27,7 @@ do
     obj=`echo $i | sed -e s/".c$"/".o"/`
     name=`echo $i | cut -d\. -f1`
     echo "Building $name"
+    
     $CC $CFLAGS $OPTIONS $i -c -o $obj
     if [ "$?" -ne "0" ]; then
         echo "Error Compiling: $i"

@@ -249,7 +249,8 @@ void tv4x_free_kernel(struct tv4x_kernel *k)
     free(k->q_events);
 }
 
-static __inline void tv4x_process_line(
+static TV4X_INLINE void
+tv4x_process_line(
             struct tv4x_kernel *k,
             tv4x_in_type *in,
             tv4x_out_type *out,

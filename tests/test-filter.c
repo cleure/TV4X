@@ -26,6 +26,10 @@ int main(int argc, char **argv)
         exit(1);
     }
     
+    #if defined(__clang__)
+        printf("Clang\n");
+    #endif
+    
     /* Read file */
     in = rgb24_from_png(argv[1], &width, &height);
     
