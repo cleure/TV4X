@@ -272,10 +272,9 @@ tv4x_process_line(
     float /*sum_y,*/ sum_i, sum_q;
     
     /* Weighted averages (blur filter) */
-    float weights[3] = {0.2f, 0.2f, 0.2f};
-    float weighted_y[3];
-    float weighted_i[3];
-    float weighted_q[3];
+    float weighted_y[2];
+    float weighted_i[2];
+    float weighted_q[2];
     int weighted_index = 0;
     uint32_t packed;
     
@@ -322,15 +321,12 @@ tv4x_process_line(
     
     weighted_y[0] = cur_y;
     weighted_y[1] = cur_y;
-    weighted_y[2] = cur_y;
     
     weighted_i[0] = cur_i;
     weighted_i[1] = cur_i;
-    weighted_i[2] = cur_i;
     
     weighted_q[0] = cur_q;
     weighted_q[1] = cur_q;
-    weighted_q[2] = cur_q;
     
     for (x = 0; x < in_width; x++) {
         /* Convert to YIQ */
@@ -358,25 +354,19 @@ tv4x_process_line(
         }
         
         #ifdef TV4X_YIQ_BLUR_ENABLED
-            weighted_index = x % 3;
+            weighted_index = x % 2;
+            work_y = (weighted_y[0] + weighted_y[1]) * 0.2 +
+                      cur_y * 0.6;
+            
+            work_i = (weighted_i[0] + weighted_i[1]) * 0.2 +
+                      cur_i * 0.6;
+            
+            work_q = (weighted_q[0] + weighted_q[1]) * 0.2 +
+                      cur_q * 0.6;
+            
             weighted_y[weighted_index] = cur_y;
             weighted_i[weighted_index] = cur_i;
             weighted_q[weighted_index] = cur_q;
-            weights[weighted_index] = 0.6f;
-            
-            work_y = (weighted_y[0] * weights[0]) +
-                     (weighted_y[1] * weights[1]) +
-                     (weighted_y[2] * weights[2]);
-            
-            work_i = (weighted_i[0] * weights[0]) +
-                     (weighted_i[1] * weights[1]) +
-                     (weighted_i[2] * weights[2]);
-                     
-            work_q = (weighted_q[0] * weights[0]) +
-                     (weighted_q[1] * weights[1]) +
-                     (weighted_q[2] * weights[2]);
-        
-            weights[weighted_index] = 0.2f;
         #else
             work_y = cur_y;
             work_i = cur_i;
