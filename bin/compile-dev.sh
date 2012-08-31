@@ -4,7 +4,7 @@ CC="gcc"
 CFLAGS="-Wall -g -O3 -std=c89 -pedantic -I./include -I/opt/local/include -funroll-loops -ffast-math -msse2 -fomit-frame-pointer -finline-functions"
 
 #OPTIONS="-DTV4X_YIQ_BLUR_ENABLED"
-OPTIONS="-DTV4X_YIQ_BLUR_ENABLED"
+OPTIONS="-DTV4X_YIQ_BLUR_ENABLED -DTV4X_USE_SSE"
 
 LIBS="/opt/local/lib/libpng.a /opt/local/lib/libz.a"
 SOURCES=`find src -type f -name "*.c"`

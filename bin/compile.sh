@@ -3,7 +3,7 @@
 CC="gcc"
 CFLAGS="-Wall -g -O3 -std=c99 -I./include -funroll-loops -ffast-math -msse2 -fomit-frame-pointer -finline-functions"
 
-OPTIONS="-DTV4X_YIQ_BLUR_ENABLED"
+OPTIONS="-DTV4X_YIQ_BLUR_ENABLED -DTV4X_USE_SSE"
 
 LIBS="-lpng -lz"
 SOURCES=`find src -type f -name "*.c"`

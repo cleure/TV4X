@@ -2,6 +2,10 @@
 #include "rgb.h"
 #include "yiq.h"
 
+#ifdef TV4X_USE_SSE
+    #include <xmmintrin.h>
+#endif
+
 /* RGB to YIQ Matrix */
 static const float yiq_in_matrix[3][3] = {
     {0.299f,     0.587f,    0.114f},
@@ -80,6 +84,13 @@ void TV4X_INLINE tv4x_yiq_to_rgb_unpacked(
 
     float r, g, b;
     
+    #ifdef TV4X_USE_SSE
+        __m128 maxclamp;
+        __m128 minclamp;
+        __m128 result;
+        float *rgb;
+    #endif
+    
     /* Get R */
     r = (y) +
         (yiq_out_matrix[0][1] * i) +
@@ -110,9 +121,24 @@ void TV4X_INLINE tv4x_yiq_to_rgb_unpacked(
     #endif
     
     /* Clamp */
-    CLAMP(r, 0, fmt->r_mask);
-    CLAMP(g, 0, fmt->g_mask);
-    CLAMP(b, 0, fmt->b_mask);
+    #ifdef TV4X_USE_SSE
+        maxclamp = _mm_setr_ps(31.0f, 31.0f, 31.0f, 0.0f);
+        minclamp = _mm_setr_ps( 0.0f,  0.0f,  0.0f, 0.0f);
+        result   = _mm_setr_ps(r, g, b, 0.0f);
+    
+        result = _mm_min_ps(maxclamp, result);
+        result = _mm_max_ps(minclamp, result);
+    
+        rgb = ((float *)&result);
+    
+        r = *(rgb+0);
+        g = *(rgb+1);
+        b = *(rgb+2);
+    #else
+        CLAMP(r, 0, fmt->r_mask);
+        CLAMP(g, 0, fmt->g_mask);
+        CLAMP(b, 0, fmt->b_mask);
+    #endif
     
     *ro = (uint8_t)r;
     *go = (uint8_t)g;

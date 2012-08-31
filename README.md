@@ -36,6 +36,7 @@ TODO List
         - YIQ Event Burst (Average/Simple/Off)
         - Luma/Chroma
         - Scale RGB up/down
+- SNES HiRes Support
 - Perhaps YIQ math could be simplified?
 - Support RGB16 and RGB24 Input?... RGB24 would require 32MB of memory :-/
 - Explore ways to make tv4x_process_line branchless.
