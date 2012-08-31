@@ -122,7 +122,10 @@ void TV4X_INLINE tv4x_yiq_to_rgb_unpacked(
     
     /* Clamp */
     #ifdef TV4X_USE_SSE
-        maxclamp = _mm_setr_ps(31.0f, 31.0f, 31.0f, 0.0f);
+        maxclamp = _mm_setr_ps(
+                        (float)fmt->r_mask,
+                        (float)fmt->g_mask,
+                        (float)fmt->b_mask, 0.0f);
         minclamp = _mm_setr_ps( 0.0f,  0.0f,  0.0f, 0.0f);
         result   = _mm_setr_ps(r, g, b, 0.0f);
     
