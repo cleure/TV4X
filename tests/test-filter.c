@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <sys/time.h>
 #include "rgb.h"
 #include "yiq.h"
 #include "tv4x.h"
@@ -13,8 +14,8 @@ int main(int argc, char **argv)
     int out_width, out_height;
     
     /* For benchmarking */
-    clock_t start_time,
-            end_time;
+    struct timeval start, end;
+    double start_t, end_t;
     
     /* Kernel, data pointers */
     struct tv4x_kernel kern;
@@ -50,14 +51,16 @@ int main(int argc, char **argv)
             &tv4x_rgb_format_rgb15,
             &tv4x_rgb_format_rgb24,
             &tv4x_setup_composite,
-            tv4x_crt_silly,
-            tv4x_crt_silly_phosphor,
+            tv4x_crt_slotmask,
+            tv4x_crt_slotmask_phosphor,
+            -12.0f,
+            12.0f,
             0.96f,
             0.9f,
             width);
     
     /* Process */
-    start_time = clock();
+    gettimeofday(&start, NULL);
     tv4x_process(
             &kern,
             in,
@@ -67,8 +70,11 @@ int main(int argc, char **argv)
             width,
             height);
         
-    end_time = clock();
-    printf("Time: %f\n", (end_time - start_time) / (float)CLOCKS_PER_SEC);
+    gettimeofday(&end, NULL);
+    
+    start_t = start.tv_sec + (start.tv_usec / 1000000.0);
+    end_t = end.tv_sec + (end.tv_usec / 1000000.0);
+    printf("Time: %2.8f\n", (end_t - start_t));
 
     /* Save */
     rgb24_to_png(out, out_width, out_height, "out.png");

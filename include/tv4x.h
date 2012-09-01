@@ -78,6 +78,8 @@ int tv4x_init_kernel(
         struct tv4x_setup *setup,
         float crt_mask[2][16],
         float crt_rgb[2][16][3],
+        float scan_brightness,
+        float scan_contrast,
         float deluma,
         float dechroma,
         int max_width);

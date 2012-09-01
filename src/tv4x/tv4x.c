@@ -41,6 +41,8 @@ int tv4x_init_kernel(
         struct tv4x_setup *setup,
         float crt_mask[2][16],
         float crt_rgb[2][16][3],
+        float scan_brightness,
+        float scan_contrast,
         float deluma,
         float dechroma,
         int max_width) {
@@ -72,10 +74,6 @@ int tv4x_init_kernel(
     /* Scanline slope/intercept for contrast filter */
     float scan_slope;
     float scan_intercept;
-    
-    /* Scanline contrast settings */
-    float scan_brightness = 0.0f;
-    float scan_contrast = 12.0f;
     
     /* Set pointers */
     k->in_fmt = in_fmt;
@@ -315,7 +313,7 @@ tv4x_process_line(
     
     /* The previous 2 and current YIQ values are held in these "weighed" arrays,
        for the blur function. These use a "rolling index" based on the value of x,
-       so that there is no branching (ie: index = x % 3). This also has the
+       so that there is no branching (ie: index = x % 2). This also has the
        benefit of automatically overwriting the least recent value, so that there
        are fewer MOV instructions being executed. */
     
@@ -391,6 +389,7 @@ tv4x_process_line(
         
         PACK_RGB(r1, g1, b1, tv4x_rgb_format_rgb15, packed);
         
+        /* Copy */
         out_ln1[i2+0] = (*rgb_matrix)[packed][0];
         out_ln1[i2+1] = (*rgb_matrix)[packed][1];
         out_ln1[i2+2] = (*rgb_matrix)[packed][2];

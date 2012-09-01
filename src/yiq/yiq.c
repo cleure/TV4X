@@ -38,15 +38,7 @@ void TV4X_INLINE tv4x_rgb_to_yiq(
         float *q) {
     
     float r, g, b;
-    
     UNPACK_RGB(r, g, b, *fmt, rgb);
-    
-    #ifdef TV4X_YIQ_SCALE_RGB
-        /* Scale up */
-        r *= (float)tv4x_rgb_format_rgb24.r_mask / (float)fmt->r_mask;
-        g *= (float)tv4x_rgb_format_rgb24.g_mask / (float)fmt->g_mask;
-        b *= (float)tv4x_rgb_format_rgb24.b_mask / (float)fmt->b_mask;
-    #endif
     
     *y = (yiq_in_matrix[0][0] * r) +
          (yiq_in_matrix[0][1] * g) +
@@ -112,13 +104,6 @@ void TV4X_INLINE tv4x_yiq_to_rgb_unpacked(
     g += 0.5;
     b += 0.5;
     */
-    
-    /* Scale down */
-    #ifdef TV4X_YIQ_SCALE_RGB
-        r *= ((float)fmt->r_mask / (float)tv4x_rgb_format_rgb24.r_mask);
-        g *= ((float)fmt->g_mask / (float)tv4x_rgb_format_rgb24.g_mask);
-        b *= ((float)fmt->b_mask / (float)tv4x_rgb_format_rgb24.b_mask);
-    #endif
     
     /* Clamp */
     #ifdef TV4X_USE_SSE
