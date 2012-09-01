@@ -41,6 +41,8 @@ int tv4x_init_kernel(
         struct tv4x_setup *setup,
         float crt_mask[2][16],
         float crt_rgb[2][16][3],
+        float brightness,
+        float contrast,
         float scan_brightness,
         float scan_contrast,
         float deluma,
@@ -71,9 +73,27 @@ int tv4x_init_kernel(
              out_rgb1,
              out_rgb2;
     
+    /* Brightness contrast filter */
+    float slope;
+    float intercept;
+    
     /* Scanline slope/intercept for contrast filter */
     float scan_slope;
     float scan_intercept;
+    
+    /* Calculate slope/intercept */
+    tv4x_calc_slope_intercept(
+        brightness,
+        contrast,
+        &slope,
+        &intercept);
+    
+    /* Calculate slope/intercept */
+    tv4x_calc_slope_intercept(
+        scan_brightness,
+        scan_contrast,
+        &scan_slope,
+        &scan_intercept);
     
     /* Set pointers */
     k->in_fmt = in_fmt;
@@ -125,13 +145,6 @@ int tv4x_init_kernel(
         }
     }
     
-    /* Calculate slope/intercept */
-    tv4x_calc_slope_intercept(
-        scan_brightness,
-        scan_contrast,
-        &scan_slope,
-        &scan_intercept);
-    
     /*
     
     FIXME: In format now MUST be RGB15...
@@ -145,6 +158,13 @@ int tv4x_init_kernel(
             /* Red */
             r1 = r;
             r2 = r;
+            
+            /* Perform brightness/contrast on original values */
+            r1 = ((slope * (1.0f / 31.0f)) *
+                 r1 + intercept) * 31.0f;
+                
+            r2 = ((slope * (1.0f / 31.0f)) *
+                 r2 + intercept) * 31.0f;
             
             /* Run through matrices */
             r1 *= crt_mask[0][x];
@@ -174,6 +194,13 @@ int tv4x_init_kernel(
             g1 = g;
             g2 = g;
             
+            /* Perform brightness/contrast on original values */
+            g1 = ((slope * (1.0f / 31.0f)) *
+                 g1 + intercept) * 31.0f;
+                
+            g2 = ((slope * (1.0f / 31.0f)) *
+                 g2 + intercept) * 31.0f;
+            
             /* Run through matrices */
             g1 *= crt_mask[0][x];
             g2 *= crt_mask[1][x];
@@ -201,6 +228,13 @@ int tv4x_init_kernel(
             /* Blue */
             b1 = b;
             b2 = b;
+            
+            /* Perform brightness/contrast on original values */
+            b1 = ((slope * (1.0f / 31.0f)) *
+                 b1 + intercept) * 31.0f;
+                
+            b2 = ((slope * (1.0f / 31.0f)) *
+                 b2 + intercept) * 31.0f;
             
             /* Run through matrices */
             b1 *= crt_mask[0][x];

@@ -53,6 +53,8 @@ int main(int argc, char **argv)
             &tv4x_setup_composite,
             tv4x_crt_slotmask,
             tv4x_crt_slotmask_phosphor,
+            2.0f,
+            5.0f,
             -12.0f,
             12.0f,
             0.96f,
@@ -69,7 +71,7 @@ int main(int argc, char **argv)
             width*4*4,
             width,
             height);
-        
+    
     gettimeofday(&end, NULL);
     
     start_t = start.tv_sec + (start.tv_usec / 1000000.0);
