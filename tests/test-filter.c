@@ -27,10 +27,6 @@ int main(int argc, char **argv)
         exit(1);
     }
     
-    #if defined(__clang__)
-        printf("Clang\n");
-    #endif
-    
     /* Read file */
     in = rgb24_from_png(argv[1], &width, &height);
     
@@ -54,8 +50,8 @@ int main(int argc, char **argv)
             tv4x_crt_slotmask,
             tv4x_crt_slotmask_phosphor,
             2.0f,
-            5.0f,
-            -12.0f,
+            2.0f,
+            -4.0f,
             12.0f,
             0.96f,
             0.9f,

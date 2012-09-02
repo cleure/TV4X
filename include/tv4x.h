@@ -43,12 +43,14 @@ extern float tv4x_crt_passthru[2][16];
 extern float tv4x_crt_slotmask[2][16];
 extern float tv4x_crt_scanline[2][16];
 extern float tv4x_crt_silly[2][16];
+extern float tv4x_crt_stich[2][16];
 
 /* CRT Phosphors */
 extern float tv4x_crt_passthru_phosphor[2][16][3];
 extern float tv4x_crt_slotmask_phosphor[2][16][3];
 extern float tv4x_crt_scanline_phosphor[2][16][3];
 extern float tv4x_crt_silly_phosphor[2][16][3];
+extern float tv4x_crt_stich_phosphor[2][16][3];
 
 struct tv4x_kernel {
     /* I/O Formats */

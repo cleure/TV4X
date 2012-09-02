@@ -298,16 +298,15 @@ tv4x_process_line(
     uint8_t r1, g1, b1;
     
     /* Work floats */
-    float tmp_y, tmp_i, tmp_q;
-    float work_y, work_i, work_q;
-    float cur_y, cur_i, cur_q;
-    float /*sum_y,*/ sum_i, sum_q;
+    float tmp_yiq[3];
+    float cur_yiq[3];
+    float work_yiq[3];
+    float next_yiq[3];
     
     /* Weighted averages (blur filter) */
     float weighted_y[2];
     float weighted_i[2];
     float weighted_q[2];
-    int weighted_index = 0;
     uint32_t packed;
     
     /* Output pointers */
@@ -315,22 +314,14 @@ tv4x_process_line(
     tv4x_out_type *out_ln2 = out + (out_width);
     tv4x_out_type *out_ln3 = out + (out_width * 2);
     tv4x_out_type *out_ln4 = out + (out_width * 3);
-    
-    /* Sums, for averages */
-    int /*sum_y_len = 1,*/
-        sum_i_len = 1,
-        sum_q_len = 1;
 
     /* Indexes */
     i1 = (y * in_pitch);
     i2 = (y * out_pitch);
     
     /* Initial YIQ values */
-    tv4x_rgb_to_yiq(k->in_fmt, in[i1], &cur_y, &cur_i, &cur_q);
-    
-    /*sum_y = cur_y;*/
-    sum_i = cur_i;
-    sum_q = cur_q;
+    tv4x_rgb_to_yiq(k->in_fmt, in[i1+1], &tmp_yiq[0], &tmp_yiq[1], &tmp_yiq[2]);
+    tv4x_rgb_to_yiq(k->in_fmt, in[i1], &next_yiq[0], &next_yiq[1], &next_yiq[2]);
     
     /*
     
@@ -351,69 +342,72 @@ tv4x_process_line(
        benefit of automatically overwriting the least recent value, so that there
        are fewer MOV instructions being executed. */
     
-    weighted_y[0] = cur_y;
-    weighted_y[1] = cur_y;
+    weighted_y[0] = next_yiq[0];
+    weighted_y[1] = tmp_yiq[0];
     
-    weighted_i[0] = cur_i;
-    weighted_i[1] = cur_i;
+    weighted_i[0] = next_yiq[1];
+    weighted_i[1] = tmp_yiq[1];
     
-    weighted_q[0] = cur_q;
-    weighted_q[1] = cur_q;
+    weighted_q[0] = next_yiq[2];
+    weighted_q[1] = tmp_yiq[2];
+    
+    cur_yiq[0] = next_yiq[0];
+    cur_yiq[1] = next_yiq[1];
+    cur_yiq[2] = next_yiq[2];
     
     for (x = 0; x < in_width; x++) {
         /* Convert to YIQ */
-        tv4x_rgb_to_yiq(k->in_fmt, in[i1], &tmp_y, &tmp_i, &tmp_q);
-        cur_y = tmp_y;
+        tmp_yiq[0] = next_yiq[0];
+        tmp_yiq[1] = next_yiq[1];
+        tmp_yiq[2] = next_yiq[2];
+        
+        tv4x_rgb_to_yiq(k->in_fmt, in[i1+1], &next_yiq[0], &next_yiq[1], &next_yiq[2]);
+        cur_yiq[0] = tmp_yiq[0];
         
         /* I Events */
         if (k->i_events[x]) {
-            cur_i = sum_i / (float)sum_i_len;
-            sum_i_len = 1;
-            sum_i = tmp_i;
-        } else {
-            sum_i += tmp_i;
-            sum_i_len++;
+            cur_yiq[1] = tmp_yiq[1];
         }
         
         /* Q Events */
         if (k->q_events[x]) {
-            cur_q = sum_q / (float)sum_q_len;
-            sum_q_len = 1;
-            sum_q = tmp_q;
-        } else {
-            sum_q += tmp_q;
-            sum_q_len++;
+            cur_yiq[2] = tmp_yiq[2];
         }
         
         #ifdef TV4X_YIQ_BLUR_ENABLED
-            weighted_index = x % 2;
-            work_y = (weighted_y[0] + weighted_y[1]) * 0.2 +
-                      cur_y * 0.6;
+            work_yiq[0] = (weighted_y[0] + weighted_y[1]) * 0.4 +
+                           cur_yiq[0] * 0.2;
             
-            work_i = (weighted_i[0] + weighted_i[1]) * 0.2 +
-                      cur_i * 0.6;
+            work_yiq[1] = (weighted_i[0] + weighted_i[1]) * 0.4 +
+                           cur_yiq[1] * 0.2;
             
-            work_q = (weighted_q[0] + weighted_q[1]) * 0.2 +
-                      cur_q * 0.6;
+            work_yiq[2] = (weighted_q[0] + weighted_q[1]) * 0.4 +
+                           cur_yiq[2] * 0.2;
             
-            weighted_y[weighted_index] = cur_y;
-            weighted_i[weighted_index] = cur_i;
-            weighted_q[weighted_index] = cur_q;
+            weighted_y[0] = cur_yiq[0];
+            weighted_y[1] = next_yiq[0];
+            
+            weighted_i[0] = cur_yiq[1];
+            weighted_i[1] = next_yiq[1];
+            
+            weighted_q[0] = cur_yiq[2];
+            weighted_q[1] = next_yiq[2];
+            
         #else
-            work_y = cur_y;
-            work_i = cur_i;
-            work_q = cur_q;
+            work_yiq[0] = cur_yiq[0];
+            work_yiq[1] = cur_yiq[1];
+            work_yiq[2] = cur_yiq[2];
         #endif
         
         /* Deluma */
-        work_y *= k->deluma;
+        work_yiq[0] *= k->deluma;
         
         /* Dechroma */
-        work_i *= k->dechroma;
-        work_q *= k->dechroma;
+        work_yiq[1] *= k->dechroma;
+        work_yiq[2] *= k->dechroma;
         
         /* Get RGB from YIQ */
-        tv4x_yiq_to_rgb_unpacked(k->in_fmt, &r1, &g1, &b1, work_y, work_i, work_q);
+        tv4x_yiq_to_rgb_unpacked(k->in_fmt, &r1, &g1, &b1, work_yiq[0], work_yiq[1], work_yiq[2]);
         
         #ifdef TV4X_SCALE_DOWN
             r1 *= (31.0f / (float)k->in_fmt->r_mask);
