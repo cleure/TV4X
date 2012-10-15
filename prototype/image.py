@@ -262,11 +262,115 @@ class Image(object):
                 entropy.append(data[i])
         return entropy
     
+    def boxscale(self, width, height, interpolate=None):
+        scaled = [[0, 0, 0] for i in range(width * height)]
+        scale_x = float(width) / float(self.width)
+        scale_y = float(height) / float(self.height)
+        
+        if interpolate is None:
+            pass
+        
+        for y in range(0, self.height):
+            y2 = int(math.ceil((float(y) * scale_y) + 0.5)) - 1
+            
+            for x in range(0, self.width):
+                x2 = int(math.ceil((float(x) * scale_x) + 0.5)) - 1
+                i = (y * self.width) + x
+                
+                if y >= self.height - 1:
+                    if x >= self.width - 1:
+                        a = self.data[i]
+                        b = self.data[i]
+                        c = self.data[i]
+                        d = self.data[i]
+                        
+                        ai = (((int(math.ceil((float(y) * scale_y) + 0.5)) - 1) * width) +
+                               int(math.ceil((float(x) * scale_x) + 0.5)) - 1)
+                        bi = (((int(math.ceil((float(y) * scale_y) + 0.5)) - 1) * width) +
+                               int(math.ceil((float(x) * scale_x) + 0.5)) - 1)
+                        ci = (((int(math.ceil((float(y) * scale_y) + 0.5)) - 1) * width) +
+                               int(math.ceil((float(x) * scale_x) + 0.5)) - 1)
+                        di = (((int(math.ceil((float(y) * scale_y) + 0.5)) - 1) * width) +
+                               int(math.ceil((float(x) * scale_x) + 0.5)) - 1)
+                    else:
+                        a = self.data[i]
+                        b = self.data[i+1]
+                        c = self.data[i]
+                        d = self.data[i+1]
+                        
+                        ai = (((int(math.ceil((float(y) * scale_y) + 0.5)) - 1) * width) +
+                               int(math.ceil((float(x) * scale_x) + 0.5)) - 1)
+                        bi = (((int(math.ceil((float(y) * scale_y) + 0.5)) - 1) * width) +
+                               int(math.ceil((float(x+1) * scale_x) + 0.5)) - 1)
+                        ci = (((int(math.ceil((float(y) * scale_y) + 0.5)) - 1) * width) +
+                               int(math.ceil((float(x) * scale_x) + 0.5)) - 1)
+                        di = (((int(math.ceil((float(y) * scale_y) + 0.5)) - 1) * width) +
+                               int(math.ceil((float(x+1) * scale_x) + 0.5)) - 1)
+                else:
+                    if x >= self.width - 1:
+                        a = self.data[i]
+                        b = self.data[i]
+                        c = self.data[i+self.width]
+                        d = self.data[i+self.width]
+                        
+                        ai = (((int(math.ceil((float(y) * scale_y) + 0.5)) - 1) * width) +
+                               int(math.ceil((float(x) * scale_x) + 0.5)) - 1)
+                        bi = (((int(math.ceil((float(y) * scale_y) + 0.5)) - 1) * width) +
+                               int(math.ceil((float(x) * scale_x) + 0.5)) - 1)
+                        ci = (((int(math.ceil((float(y+1) * scale_y) + 0.5)) - 1) * width) +
+                               int(math.ceil((float(x) * scale_x) + 0.5)) - 1)
+                        di = (((int(math.ceil((float(y+1) * scale_y) + 0.5)) - 1) * width) +
+                               int(math.ceil((float(x) * scale_x) + 0.5)) - 1)
+                    else:
+                        a = self.data[i]
+                        b = self.data[i+1]
+                        c = self.data[i+self.width]
+                        d = self.data[i+self.width+1]
+                        
+                        ai = (((int(math.ceil((float(y) * scale_y) + 0.5)) - 1) * width) +
+                               int(math.ceil((float(x) * scale_x) + 0.5)) - 1)
+                        bi = (((int(math.ceil((float(y) * scale_y) + 0.5)) - 1) * width) +
+                               int(math.ceil((float(x+1) * scale_x) + 0.5)) - 1)
+                        ci = (((int(math.ceil((float(y+1) * scale_y) + 0.5)) - 1) * width) +
+                               int(math.ceil((float(x) * scale_x) + 0.5)) - 1)
+                        di = (((int(math.ceil((float(y+1) * scale_y) + 0.5)) - 1) * width) +
+                               int(math.ceil((float(x+1) * scale_x) + 0.5)) - 1)
+
+                # Vertical linear scale
+                L = ((ci - ai) / width) + 1
+                l = 1
+                
+                Lx = (bi - ai) + 1
+                ax = int(ai)
+                
+                while l <= L:
+                    rgb = [0, 0, 0]
+                    
+                    if L == 0:
+                        rgb = c
+                    else:
+                        rgb[0] = a[0] + l * ((c[0] - a[0]) / L)
+                        rgb[1] = a[1] + l * ((c[1] - a[1]) / L)
+                        rgb[2] = a[2] + l * ((c[2] - a[2]) / L)
+                        if rgb[0] < 0: rgb[0] = 0
+                        if rgb[1] < 0: rgb[1] = 0
+                        if rgb[2] < 0: rgb[2] = 0 
+                    
+                    lx = 0
+                    while lx <= Lx:
+                        scaled[ax+lx] = rgb
+                        lx += 1
+                    
+                    l += 1
+                    ax += width
+        
+        return Image(width, height, scaled)
+    
     def fastscale(self, width, height):
         """ Nearest Neighbor Scale """
         
         scaled = [[0, 0, 0] for i in range(width * height)]
-    
+        
         for y in range(0, height):
             y2 = int(math.ceil(
                 (float(y) + 0.5) * (float(self.height) / float(height))
@@ -279,6 +383,37 @@ class Image(object):
                 i = (y * width) + x
                 i2 = ((y2 - 1) * self.width) + (x2 - 1)
                 scaled[i] = self.data[i2]
+        
+        """
+        scale_x = width / self.width
+        scale_y = height / self.height
+        
+        for y in range(0, self.height):
+            y2 = int(math.ceil((float(y) * scale_y) + 0.5))
+            y2 -= 1
+            
+            for x in range(0, self.width):
+                x2 = int(math.ceil((float(x) * scale_x) + 0.5))
+                x2 -= 1
+                
+                i = (y * self.width) + x
+                i2 = y2 * width + x2
+                scaled[i2] = self.data[i]
+                
+                l = 1
+                L = scale_x+1
+                
+                while l < L:
+                    try:
+                        r = self.data[i][0] + l * ((self.data[i+1][0] - self.data[i][0]) / L)
+                        g = self.data[i][1] + l * ((self.data[i+1][1] - self.data[i][1]) / L)
+                        b = self.data[i][2] + l * ((self.data[i+1][2] - self.data[i][2]) / L)
+                    
+                        for a in range(0, scale_y+1):
+                            scaled[i2+l+(width*a)] = [r, g, b]
+                    except: pass
+                    l += 1
+        """
         
         return Image(width, height, scaled)
     

@@ -9,40 +9,13 @@ except ImportError:
 
 from image import *
 
-"""
-c = 0
-last = -1
-for i in range(0, 320):
-    if math.ceil(i * 0.1) > last:
-        last = math.ceil(i * 0.1)
-        print i
-        c += 1
-
-print c
-"""
-
-# [86.126, -14.590000000000003, 89.70499999999998]
-
-in_matrix = (
-        (0.299,     0.587,  0.114),
-        (0.596,    -0.274, -0.322),
-        (0.212,    -0.523,  0.311))
-
-# YIQ Output Matrix (to RGB)
-out_matrix = (
-        (1.0,   0.956,  0.621),
-        (1.0,  -0.272, -0.647),
-        (1.0,  -1.105,  1.702))
-
-rgb = [128, 32, 255]
-_yiq = yiq.from_rgb(rgb)
-print _yiq
-
-print ((
-    _yiq[0] * out_matrix[0][0],
-    _yiq[1] * out_matrix[0][1],
-    _yiq[2] * out_matrix[0][2],
-))
+if len(sys.argv) < 2:
+    print('Usage: python make-image.py <input> <output>')
+    sys.exit(0)
+    
+im = Image.fromPNG(sys.argv[1])
+out = im.boxscale(int(im.width*1.5), int(im.height*1.5))
+out.savePNG('out.png')
 
 sys.exit(0)
 
