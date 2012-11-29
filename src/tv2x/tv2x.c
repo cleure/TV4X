@@ -12,6 +12,15 @@
 #endif
 
 /*
+
+Since the memory requirements of a 2X filter are so drastically reduced,
+it should be possible to build it using lookup tables, almost exlusively.
+
+uint32_t lookup[31][31][4];
+
+*/
+
+/*
 * Simple function that calculates slope/intercept for the brightness/constrast
 * filter.
 *
@@ -36,6 +45,12 @@ int tv2x_init_kernel(
             float scan_contrast,
             struct tv4x_rgb_format *in_fmt,
             struct tv4x_rgb_format *out_fmt) {
+    
+    uint32_t lookup[31][31][4]
+    
+    memset(&lookup, 0, sizeof(lookup));
+    
+    printf("%d\n", sizeof(lookup));
     
     memset(kernel, 0, sizeof(*kernel));
     kernel->brightness = brightness;
