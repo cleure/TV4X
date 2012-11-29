@@ -28,12 +28,26 @@ struct tv4x_rgb_format {
     uint8_t r_shift;
     uint8_t g_shift;
     uint8_t b_shift;
+    
+    double (*to_rgb24)[3];
+    double (*to_rgb16)[3];
+    double (*to_rgb15)[3];
 };
 
 /* Various RGB Formats */
 extern struct tv4x_rgb_format tv4x_rgb_format_rgb15;
 extern struct tv4x_rgb_format tv4x_rgb_format_rgb16;
 extern struct tv4x_rgb_format tv4x_rgb_format_rgb24;
+
+extern double tv4x_rgb24_to_rgb24[3];
+extern double tv4x_rgb24_to_rgb16[3];
+extern double tv4x_rgb24_to_rgb15[3];
+extern double tv4x_rgb16_to_rgb24[3];
+extern double tv4x_rgb16_to_rgb16[3];
+extern double tv4x_rgb16_to_rgb15[3];
+extern double tv4x_rgb15_to_rgb24[3];
+extern double tv4x_rgb15_to_rgb16[3];
+extern double tv4x_rgb15_to_rgb15[3];
 
 /* Convert between RGB formats */
 void rgb_convert(
@@ -54,6 +68,9 @@ void rgb_convert(
     (r) =       (in) >> (fmt).r_shift & (fmt).r_mask;\
     (g) =       (in) >> (fmt).g_shift & (fmt).g_mask;\
     (b) =       (in) >> (fmt).b_shift & (fmt).b_mask;
+
+#define SCALE_RGB_VALUE(in_size, out_size, in, out)\
+    (out) = (in) * ((float)(out_size) / (float)(in_size));
 
 /* Clamp value macro */
 #define CLAMP(in, min, max) {\

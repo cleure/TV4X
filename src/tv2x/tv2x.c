@@ -46,12 +46,6 @@ int tv2x_init_kernel(
             struct tv4x_rgb_format *in_fmt,
             struct tv4x_rgb_format *out_fmt) {
     
-    uint32_t lookup[31][31][4]
-    
-    memset(&lookup, 0, sizeof(lookup));
-    
-    printf("%d\n", sizeof(lookup));
-    
     memset(kernel, 0, sizeof(*kernel));
     kernel->brightness = brightness;
     kernel->contrast = contrast;
@@ -96,9 +90,8 @@ void tv2x_process(
     
     int x, y;
     int i1, i2;
-    int in_r, in_g, in_b;
-    int out_r, out_g, out_b;
-    float tmp_r, tmp_g, tmp_b;
+    uint32_t in_r, in_g, in_b;
+    uint32_t out_r, out_g, out_b;
     
     int out_width = in_width * 2,
         out_height = in_height * 2;

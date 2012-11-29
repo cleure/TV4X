@@ -22,6 +22,65 @@ int main(int argc, char **argv)
     tv2x_in_type *in;
     tv2x_out_type *out;
     
+    uint32_t rgb24d = 0x00f0ffff;
+    uint32_t rgb15d = 0;
+    uint32_t r, g, b;
+    int y, z;
+    
+    struct tv4x_rgb_format *formats[3] = {
+        &tv4x_rgb_format_rgb24,
+        &tv4x_rgb_format_rgb16,
+        &tv4x_rgb_format_rgb15};
+    
+    UNPACK_RGB(r, g, b, tv4x_rgb_format_rgb24, rgb24d);
+    printf("%d %d %d\n", r, g, b);
+    
+    r *= tv4x_rgb24_to_rgb15[0];
+    g *= tv4x_rgb24_to_rgb15[1];
+    b *= tv4x_rgb24_to_rgb15[2];
+    printf("%d %d %d\n", r, g, b);
+    
+    r *= tv4x_rgb15_to_rgb16[0];
+    g *= tv4x_rgb15_to_rgb16[1];
+    b *= tv4x_rgb15_to_rgb16[2];
+    printf("%d %d %d\n", r, g, b);
+    
+    r *= tv4x_rgb16_to_rgb24[0];
+    g *= tv4x_rgb16_to_rgb24[1];
+    b *= tv4x_rgb16_to_rgb24[2];
+    printf("%d %d %d\n", r, g, b);
+    
+    /*
+    for (y = 0; y < 3; y++) {
+        for (z = 0; z < 3; z++) {
+            printf("double tv4x_");
+            if (formats[y] == &tv4x_rgb_format_rgb24) {
+                printf("rgb24");
+            } else if (formats[y] == &tv4x_rgb_format_rgb16) {
+                printf("rgb16");
+            } else if (formats[y] == &tv4x_rgb_format_rgb15) {
+                printf("rgb15");
+            }
+            
+            printf("_to_");
+            if (formats[z] == &tv4x_rgb_format_rgb24) {
+                printf("rgb24");
+            } else if (formats[z] == &tv4x_rgb_format_rgb16) {
+                printf("rgb16");
+            } else if (formats[z] == &tv4x_rgb_format_rgb15) {
+                printf("rgb15");
+            }
+
+            printf("[3] = {");
+            printf("%2.16f, ", (double)formats[z]->r_mask / (double)formats[y]->r_mask);
+            printf("%2.16f, ", (double)formats[z]->g_mask / (double)formats[y]->g_mask);
+            printf("%2.16f  ", (double)formats[z]->b_mask / (double)formats[y]->b_mask);
+            printf("};\n");
+        }
+    }*/
+    
+    exit(0);
+    
     if (argc < 2) {
         fprintf(stderr, "Usage: test-filter <input PNG>\n");
         exit(1);
