@@ -4,7 +4,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include "rgb.h"
-#include "yiq.h"
+#include "tv2x.h"
 #include "tv4x.h"
 #include "pngutil.h"
 
@@ -18,9 +18,9 @@ int main(int argc, char **argv)
     double start_t, end_t;
     
     /* Kernel, data pointers */
-    struct tv4x_kernel kern;
-    tv4x_in_type *in;
-    tv4x_out_type *out;
+    struct tv2x_kernel kern;
+    tv2x_in_type *in;
+    tv2x_out_type *out;
     
     if (argc < 2) {
         fprintf(stderr, "Usage: test-filter <input PNG>\n");
@@ -30,35 +30,55 @@ int main(int argc, char **argv)
     /* Read file */
     in = rgb24_from_png(argv[1], &width, &height);
     
-    /* Convert to RGB15 */
-    rgb_convert(
-        &tv4x_rgb_format_rgb24,
-        &tv4x_rgb_format_rgb15,
-        in, in,
-        width * height);
-    
-    out_width = width * 4;
-    out_height = height * 4;
-    out = malloc(sizeof(*out) * width * height * 4 * 4);
+    out_width = width * 2;
+    out_height = height * 2;
+    out = malloc(sizeof(*out) * width * height * 2 * 2);
     
     /* Initialize kernel */
-    tv4x_init_kernel(
+    tv2x_init_kernel(
             &kern,
-            &tv4x_rgb_format_rgb15,
+            0.0f,
+            0.0f,
+            20.0f,
+            10.0f,
             &tv4x_rgb_format_rgb24,
-            &tv4x_setup_composite,
-            tv4x_crt_slotmask,
-            tv4x_crt_slotmask_phosphor,
-            2.0f,
-            2.0f,
-            -12.0f,
-            12.0f,
-            0.96f,
-            0.9f,
-            width);
+            &tv4x_rgb_format_rgb24);
+    
+    /*
+    
+int tv2x_init_kernel(
+            struct tv2x_kernel *kernel,
+            float brightness,
+            float contrast,
+            float scan_brightness,
+            float scan_contrast,
+            struct tv4x_rgb_format *in_fmt,
+            struct tv4x_rgb_format *out_fmt);
+
+void tv2x_process(
+            struct tv2x_kernel *k,
+            tv2x_in_type *in,
+            tv2x_out_type *out,
+            int in_pitch,
+            int out_pitch,
+            int in_width,
+            int in_height);
+    
+    */
     
     /* Process */
     gettimeofday(&start, NULL);
+
+    tv2x_process(
+            &kern,
+            in,
+            out,
+            0,
+            0,
+            width,
+            height);
+
+    /*
     tv4x_process(
             &kern,
             in,
@@ -66,7 +86,7 @@ int main(int argc, char **argv)
             width,
             width*4*4,
             width,
-            height);
+            height);*/
     
     gettimeofday(&end, NULL);
     
@@ -78,7 +98,6 @@ int main(int argc, char **argv)
     rgb24_to_png(out, out_width, out_height, "out.png");
     
     /* Free */
-    tv4x_free_kernel(&kern);
     free(in);
     free(out);
 

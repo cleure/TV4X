@@ -16,6 +16,8 @@ def main():
         sys.exit(0)
     
     im = Image.fromPNG(sys.argv[1])
+    
+    """
     out = im.tv4x_scale(
         blur_factor=0.2,
         mult_matrix_odd=slot_mask_scanline[0],
@@ -26,7 +28,9 @@ def main():
         noise_max=0,
         brightness=0.0,
         contrast=4.0)
-        
+    """
+    
+    out = im.tv2x_scale()
     out.savePNG(sys.argv[2])
     sys.exit(0)
 

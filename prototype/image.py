@@ -539,6 +539,67 @@ class Image(object):
         
         return value
     
+    def tv2x_scale(self):
+        out_width = self.width * 2;
+        out_height = self.height * 2
+        output = [[0, 0, 0] for i in xrange(0, out_width * out_height)]
+        matrix = [[1.05, 1.0, 0.95], [0.95, 1.0, 1.05]]
+        matrix_b = [
+            [[1.05, 1.0, 1.0], [1.0, 1.05, 1.0]],
+            [[1.0, 1.0, 1.05], [1.05, 1.0, 1.0]],
+            [[1.0, 1.05, 1.0], [1.0, 1.0, 1.05]]
+        ]
+        
+        scan_brightness = -20.0
+        scan_contrast = 4.0
+        
+        slope = math.tan((math.pi * (scan_contrast / 100.0 + 1.0) / 4.0))
+        if slope < 0.0:
+            slope = 0.0
+        slope = round(slope, 10)
+        
+        intercept = scan_brightness / 100.0 + ((100.0 - scan_brightness) / 200.0) * (1.0 - slope)
+        
+        for y in xrange(0, self.height):
+            for x in xrange(0, self.width):
+                """
+                
+                RG BR GB
+                BR GB RG
+                
+                """
+                
+                i1 = (y * self.width) + x;
+                i2 = (y * out_width * 2) + (x * 2)
+                
+                if x == 1:
+                    linear = [[0, 0, 0], self.data[i1]]
+                if (x+1) < self.width:
+                    linear = [self.data[i1],
+                            [(self.data[i1][0] + self.data[i1+1][0])/2,
+                             (self.data[i1][1] + self.data[i1+1][1])/2,
+                             (self.data[i1][2] + self.data[i1+1][2])/2]]
+                else:
+                    linear = [self.data[i1], [0, 0, 0]]
+                
+                for a in range(0, 2):
+                    for b in range(0, 3):
+                        v = linear[a][b] * matrix_b[(x+(y%2))%3][a][b]
+                        if v > 255.0: v = 255.0
+                        if v < 0.0: v = 0.0
+                        output[i2+a][b] = int(v)
+                
+                i2 += out_width
+                for a in range(0, 2):
+                    for b in range(0, 3):
+                        v = ((slope * (1.0 / 255.0)) * (linear[a][b] * matrix_b[(x+(y%2))%3][a][b]) + intercept) * 255.0
+                        #v = ((slope * (1.0 / 255.0)) * linear[a][b] + intercept) * 255.0
+                        if v > 255.0: v = 255.0
+                        if v < 0.0: v = 0.0
+                        output[i2+a][b] = int(v)
+        
+        return Image(out_width, out_height, output)
+    
     def tv4x_scale(self,
             blur_factor=0.4,
             noise_max=16,
