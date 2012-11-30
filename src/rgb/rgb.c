@@ -104,12 +104,6 @@ int rgb_get_conversion_table(
     return 0;
 }
 
-/*
-
-TODO: Get proper conversion table based on supplied in/out formats.
-
-*/
-
 /**
 * Convert between various RGB formats.
 *
