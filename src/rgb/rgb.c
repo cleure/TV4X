@@ -1,4 +1,6 @@
 #include <stdint.h>
+#include <stdlib.h>
+#include <memory.h>
 #include "rgb.h"
 
 /* RGB Format Conversion Tables */
@@ -56,6 +58,51 @@ struct tv4x_rgb_format tv4x_rgb_format_rgb24 = {
     &tv4x_rgb24_to_rgb16,   /* to RGB16 conversion table */
     &tv4x_rgb24_to_rgb15,   /* to RGB15 conversion table */
 };
+
+/* Lookup table for rgb_conversion_table() */
+struct format_lookup_table {
+    struct tv4x_rgb_format *in;
+    struct tv4x_rgb_format *out;
+    double (*cnvtable)[3];
+};
+
+static struct format_lookup_table fmt_lk_table[] = {
+    {&tv4x_rgb_format_rgb15, &tv4x_rgb_format_rgb15, &tv4x_rgb15_to_rgb15},
+    {&tv4x_rgb_format_rgb15, &tv4x_rgb_format_rgb16, &tv4x_rgb15_to_rgb16},
+    {&tv4x_rgb_format_rgb15, &tv4x_rgb_format_rgb24, &tv4x_rgb15_to_rgb24},
+    {&tv4x_rgb_format_rgb16, &tv4x_rgb_format_rgb15, &tv4x_rgb16_to_rgb15},
+    {&tv4x_rgb_format_rgb16, &tv4x_rgb_format_rgb16, &tv4x_rgb16_to_rgb16},
+    {&tv4x_rgb_format_rgb16, &tv4x_rgb_format_rgb24, &tv4x_rgb16_to_rgb24},
+    {&tv4x_rgb_format_rgb24, &tv4x_rgb_format_rgb15, &tv4x_rgb24_to_rgb15},
+    {&tv4x_rgb_format_rgb24, &tv4x_rgb_format_rgb16, &tv4x_rgb24_to_rgb16},
+    {&tv4x_rgb_format_rgb24, &tv4x_rgb_format_rgb24, &tv4x_rgb24_to_rgb24},
+};
+
+/**
+* Get conversion table for in/out format, using simple array search.
+*
+* @param    struct tv4x_rgb_format *in
+* @param    struct tv4x_rgb_format *out
+* @param    double (*cnvtable)[3]
+* @return   1 on success, 0 on error
+**/
+int rgb_get_conversion_table(
+            struct tv4x_rgb_format *in,
+            struct tv4x_rgb_format *out,
+            double (*cnvtable)[3]) {
+    
+    int i, len;
+    
+    len = sizeof(fmt_lk_table)/sizeof(fmt_lk_table[0]);
+    for (i = 0; i < len; i++) {
+        if (in == fmt_lk_table[i].in && out == fmt_lk_table[i].out) {
+            memcpy(cnvtable, fmt_lk_table[i].cnvtable, sizeof(*cnvtable));
+            return 1;
+        }
+    }
+    
+    return 0;
+}
 
 /*
 

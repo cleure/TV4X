@@ -49,6 +49,13 @@ extern double tv4x_rgb15_to_rgb24[3];
 extern double tv4x_rgb15_to_rgb16[3];
 extern double tv4x_rgb15_to_rgb15[3];
 
+/* Get RGB conversion table for in/out combination. Result copied into
+   cnvtable, which is a pointer to an array of double with 3 elements. */
+int rgb_get_conversion_table(
+            struct tv4x_rgb_format *in,
+            struct tv4x_rgb_format *out,
+            double (*cnvtable)[3]);
+
 /* Convert between RGB formats */
 void rgb_convert(
                     struct tv4x_rgb_format *in_fmt,
