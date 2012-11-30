@@ -76,9 +76,6 @@ void rgb_convert(
     (g) =       (in) >> (fmt).g_shift & (fmt).g_mask;\
     (b) =       (in) >> (fmt).b_shift & (fmt).b_mask;
 
-#define SCALE_RGB_VALUE(in_size, out_size, in, out)\
-    (out) = (in) * ((float)(out_size) / (float)(in_size));
-
 /* Clamp value macro */
 #define CLAMP(in, min, max) {\
     if ((in) > max) {\

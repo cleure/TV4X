@@ -32,9 +32,21 @@ int main(int argc, char **argv)
         &tv4x_rgb_format_rgb16,
         &tv4x_rgb_format_rgb15};
     
-    UNPACK_RGB(r, g, b, tv4x_rgb_format_rgb24, rgb24d);
+    #define UNPACK_RGB_FMT(r, g, b, in_fmt, conv, in)\
+        (r) =       ((in) >> (fmt).r_shift & (fmt).r_mask) * (conv)[0];\
+        (g) =       ((in) >> (fmt).g_shift & (fmt).g_mask) * (conv)[1];\
+        (b) =       ((in) >> (fmt).b_shift & (fmt).b_mask) * (conv)[2];
+    
+    UNPACK_RGB_FMT(r, g, b, tv4x_rgb_format_rgb24, tv4x_rgb24_to_rgb15, rgb24d);
     printf("%d %d %d\n", r, g, b);
     
+/* Pack RGB */
+#define PACK_RGB(r, g, b, fmt, out)\
+    (out) =     (r) << (fmt).r_shift |\
+                (g) << (fmt).g_shift |\
+                (b) << (fmt).b_shift;
+    
+    /*
     r *= tv4x_rgb24_to_rgb15[0];
     g *= tv4x_rgb24_to_rgb15[1];
     b *= tv4x_rgb24_to_rgb15[2];
@@ -48,7 +60,7 @@ int main(int argc, char **argv)
     r *= tv4x_rgb16_to_rgb24[0];
     g *= tv4x_rgb16_to_rgb24[1];
     b *= tv4x_rgb16_to_rgb24[2];
-    printf("%d %d %d\n", r, g, b);
+    printf("%d %d %d\n", r, g, b);*/
     
     /*
     for (y = 0; y < 3; y++) {
