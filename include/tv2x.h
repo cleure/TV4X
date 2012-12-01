@@ -36,8 +36,7 @@ int tv2x_init_kernel(
             float contrast,
             float scan_brightness,
             float scan_contrast,
-            struct tv4x_rgb_format *in_fmt,
-            struct tv4x_rgb_format *out_fmt);
+            struct tv4x_rgb_format *in_fmt);
 
 void tv2x_process(
             struct tv2x_kernel *k,

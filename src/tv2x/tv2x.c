@@ -12,15 +12,6 @@
 #endif
 
 /*
-
-Since the memory requirements of a 2X filter are so drastically reduced,
-it should be possible to build it using lookup tables, almost exlusively.
-
-uint32_t lookup[31][31][4];
-
-*/
-
-/*
 * Simple function that calculates slope/intercept for the brightness/constrast
 * filter.
 *
@@ -43,8 +34,7 @@ int tv2x_init_kernel(
             float contrast,
             float scan_brightness,
             float scan_contrast,
-            struct tv4x_rgb_format *in_fmt,
-            struct tv4x_rgb_format *out_fmt) {
+            struct tv4x_rgb_format *in_fmt) {
     
     memset(kernel, 0, sizeof(*kernel));
     kernel->brightness = brightness;
@@ -52,7 +42,7 @@ int tv2x_init_kernel(
     kernel->scan_brightness = scan_brightness;
     kernel->scan_contrast = scan_contrast;
     kernel->in_format = in_fmt;
-    kernel->out_format = out_fmt;
+    kernel->out_format = in_fmt;
     
     calc_slope_intercept(
         brightness,
@@ -70,10 +60,16 @@ int tv2x_init_kernel(
 }
 
 static float rgb_matrix[3][2][3] = {
-    {{1.05, 1.0, 1.0}, {1.0, 1.05, 1.0}},
-    {{1.0, 1.05, 1.0}, {1.05, 1.0, 1.0}},
-    {{1.0, 1.05, 1.0}, {1.0, 1.0, 1.05}}
+    {{1.15, 1.10, 1.10}, {1.10, 1.15, 1.10}},
+    {{1.10, 1.10, 1.15}, {1.15, 1.10, 1.10}},
+    {{1.10, 1.15, 1.10}, {1.10, 1.10, 1.15}}
 };
+
+/*
+
+RG BR GB
+
+*/
 
 void tv2x_process(
             struct tv2x_kernel *kernel,
@@ -84,70 +80,51 @@ void tv2x_process(
             int in_width,
             int in_height) {
     
-    /*
-    size_t in_size = sizeof(*in);
-    size_t out_size = sizeof(*out);*/
-    
     int x, y;
     int i1, i2;
     uint32_t in_r, in_g, in_b;
     uint32_t out_r, out_g, out_b;
     
-    int out_width = in_width * 2,
-        out_height = in_height * 2;
+    int out_width, out_height;
     
-    uint32_t linear[2][3];
-/*
-        
-        for y in xrange(0, self.height):
-            for x in xrange(0, self.width):
-                if x == 1:
-                    linear = [[0, 0, 0], self.data[i1]]
-                if (x+1) < self.width:
-                    linear = [self.data[i1],
-                            [(self.data[i1][0] + self.data[i1+1][0])/2,
-                             (self.data[i1][1] + self.data[i1+1][1])/2,
-                             (self.data[i1][2] + self.data[i1+1][2])/2]]
-                else:
-                    linear = [self.data[i1], [0, 0, 0]]
-                
-                for a in range(0, 2):
-                    for b in range(0, 3):
-                        v = linear[a][b] * matrix_b[(x+(y%2))%3][a][b]
-                        if v > 255.0: v = 255.0
-                        if v < 0.0: v = 0.0
-                        output[i2+a][b] = int(v)
-                
-                i2 += out_width
-                for a in range(0, 2):
-                    for b in range(0, 3):
-                        v = ((slope * (1.0 / 255.0)) * (linear[a][b] * matrix_b[(x+(y%2))%3][a][b]) + intercept) * 255.0
-                        #v = ((slope * (1.0 / 255.0)) * linear[a][b] + intercept) * 255.0
-                        if v > 255.0: v = 255.0
-                        if v < 0.0: v = 0.0
-                        output[i2+a][b] = int(v)
-
-*/
+    tv2x_in_type    *in_ptr;
+    tv2x_in_type    *out_ptr;
+    
+    uint8_t linear[2][3];
+    uint32_t shift_mask;
+    
+    out_width = in_width * 2;
+    out_height = in_height * 2;
+    
+    /* Bit hack that allows fast "divide by two" on packed RGB values */
+    shift_mask =
+            0xffffffff
+                & (~(1 << kernel->in_format->r_shift))
+                & (~(1 << kernel->in_format->g_shift))
+                & (~(1 << kernel->in_format->b_shift));
     
     for (y = 0; y < in_height; y++) {
+        i1 = (y * in_width);
+        i2 = (y * out_width * 2);
+        
+        in_ptr = &in[i1];
+        out_ptr = &out[i2];
+        
         for (x = 0; x < in_width; x++) {
-            i1 = (y * in_width) + x;
-            i2 = (y * out_width * 2) + (x * 2);
-            
-            UNPACK_RGB(in_r, in_g, in_b, (*kernel->in_format), in[i1]);
-            
             if (x == 0) {
-                linear[0][0] = 0;
-                linear[0][1] = 0;
-                linear[0][2] = 0;
+                UNPACK_RGB(in_r, in_g, in_b, (*kernel->in_format), *in_ptr);
+                linear[0][0] = in_r/3;
+                linear[0][1] = in_g/3;
+                linear[0][2] = in_b/3;
                 linear[1][0] = in_r;
                 linear[1][1] = in_g;
                 linear[1][2] = in_b;
+                UNPACK_RGB(in_r, in_g, in_b, (*kernel->in_format), *(in_ptr+1));
             } else if (x+1 < in_width) {
                 linear[0][0] = in_r;
                 linear[0][1] = in_g;
                 linear[0][2] = in_b;
-                UNPACK_RGB(in_r, in_g, in_b, (*kernel->in_format), in[i1+1]);
+                UNPACK_RGB(in_r, in_g, in_b, (*kernel->in_format), *(in_ptr+1));
                 linear[1][0] = (linear[0][0]+in_r)/2;
                 linear[1][1] = (linear[0][1]+in_g)/2;
                 linear[1][2] = (linear[0][2]+in_b)/2;
@@ -155,36 +132,40 @@ void tv2x_process(
                 linear[0][0] = in_r;
                 linear[0][1] = in_g;
                 linear[0][2] = in_b;
-                linear[1][0] = 0;
-                linear[1][1] = 0;
-                linear[1][2] = 0;
+                linear[1][0] = in_r/3;
+                linear[1][1] = in_g/3;
+                linear[1][2] = in_b/3;
             }
             
             out_r = (float)linear[0][0] * rgb_matrix[(x+(y%2))%3][0][0];
             out_g = (float)linear[0][1] * rgb_matrix[(x+(y%2))%3][0][1];
             out_b = (float)linear[0][2] * rgb_matrix[(x+(y%2))%3][0][2];
             
-            CLAMP(out_r, 0, 255);
-            CLAMP(out_g, 0, 255);
-            CLAMP(out_b, 0, 255);
-            PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), out[i2]);
-            out_r /= 2;
-            out_g /= 2;
-            out_b /= 2;
-            PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), out[i2+out_width]);
+            if (out_r > kernel->in_format->r_mask) out_r = kernel->in_format->r_mask;
+            if (out_g > kernel->in_format->g_mask) out_g = kernel->in_format->g_mask;
+            if (out_b > kernel->in_format->b_mask) out_b = kernel->in_format->b_mask;
             
+            PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), *out_ptr);
+            
+            /* Fast "divide by two" */
+            *(out_ptr+out_width) = (*out_ptr & shift_mask) >> 1;
+            
+            out_ptr++;
             out_r = (float)linear[1][0] * rgb_matrix[(x+(y%2))%3][1][0];
             out_g = (float)linear[1][1] * rgb_matrix[(x+(y%2))%3][1][1];
             out_b = (float)linear[1][2] * rgb_matrix[(x+(y%2))%3][1][2];
             
-            CLAMP(out_r, 0, 255);
-            CLAMP(out_g, 0, 255);
-            CLAMP(out_b, 0, 255);
-            PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), out[i2+1]);
-            out_r /= 2;
-            out_g /= 2;
-            out_b /= 2;
-            PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), out[i2+out_width+1]);
+            if (out_r > kernel->in_format->r_mask) out_r = kernel->in_format->r_mask;
+            if (out_g > kernel->in_format->g_mask) out_g = kernel->in_format->g_mask;
+            if (out_b > kernel->in_format->b_mask) out_b = kernel->in_format->b_mask;
+            
+            PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), *out_ptr);
+            
+            /* Fast "divide by two" */
+            *(out_ptr+out_width) = (*out_ptr & shift_mask) >> 1;
+            
+            in_ptr++;
+            out_ptr++;
         }
     }
 }
