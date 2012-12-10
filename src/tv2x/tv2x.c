@@ -11,21 +11,58 @@
     static const float PI = 3.141592653589793f;
 #endif
 
-/*
-* Simple function that calculates slope/intercept for the brightness/constrast
-* filter.
+/**
+* Allocate memory, and pre-process data for brightness/contrast filter.
 *
-* @param    float brightness    - Brightness parameter
-* @param    float contrast      - Contrast parameter
-* @param    float *slope        - Calculated slope placed in this
-* @param    float *intercept    - Calculated intercept placed in this.
-*/
-static void calc_slope_intercept(float brightness, float contrast, float *slope, float *intercept)
+* @param    float brightness
+* @param    float contrast
+* @param    float in_range
+*
+* @return   double *
+*               - Heap allocated array for 4 doubles
+**/
+static double *brcn_get_filter(float brightness, float contrast, float in_range)
 {
-    *slope = tan((PI * (contrast / 100.0f + 1.0f) / 4.0f));
-    *intercept = (brightness / 100.0f) +
-                 ((100.0f - brightness) / 200.0f) *
-                 (1.0f - *slope);
+    double *filter = malloc(sizeof(*filter) * 4);
+    
+    filter[0] = (double)in_range;
+    filter[1] = 1.0 / filter[0];
+    filter[2] = tan((PI * (contrast / 100.0 + 1.0) / 4.0));
+    if (filter[2] < 0.0) filter[2] = 0.0;
+    filter[3] = brightness / 100.0 + ((100.0 - brightness) / 200.0) * (1.0 - filter[2]);
+    
+    return filter;
+}
+
+/**
+* Process value for brightness/contrast filter.
+*
+* @param    double *f       - Filter, double of 4
+* @param    uint32_r value  - Value to process
+* @return   double
+**/
+static double brcn_filter_process(double *f, uint32_t value)
+{
+    double result;
+    
+    #define RANGE(i)        i[0]
+    #define SCALE(i)        i[1]
+    #define SLOPE(i)        i[2]
+    #define INTERCEPT(i)    i[3]
+    
+    result = ((SLOPE(f) * SCALE(f)) * value + INTERCEPT(f)) * RANGE(f);
+    if (result > RANGE(f)) {
+        result = RANGE(f);
+    } else if (result < 0.0) {
+        result = 0.0;
+    }
+    
+    #undef RANGE
+    #undef SCALE
+    #undef SLOPE
+    #undef INTERCEPT
+    
+    return result;
 }
 
 int tv2x_init_kernel(
@@ -36,6 +73,12 @@ int tv2x_init_kernel(
             float scan_contrast,
             struct tv4x_rgb_format *in_fmt) {
     
+    int i;
+    double result;
+    double  *brcn_filter_red,
+            *brcn_filter_green,
+            *brcn_filter_blue;
+    
     memset(kernel, 0, sizeof(*kernel));
     kernel->brightness = brightness;
     kernel->contrast = contrast;
@@ -43,26 +86,38 @@ int tv2x_init_kernel(
     kernel->scan_contrast = scan_contrast;
     kernel->in_format = in_fmt;
     kernel->out_format = in_fmt;
+
+    /* Generate brightness/contrast lookup tables */
+    brcn_filter_red = brcn_get_filter(brightness, contrast, in_fmt->r_mask);
+    brcn_filter_green = brcn_get_filter(brightness, contrast, in_fmt->g_mask);
+    brcn_filter_blue = brcn_get_filter(brightness, contrast, in_fmt->b_mask);
     
-    calc_slope_intercept(
-        brightness,
-        contrast,
-        &(kernel->slope),
-        &(kernel->intercept));
+    for (i = 0; i <= in_fmt->r_mask; i++) {
+        result = brcn_filter_process(brcn_filter_red, i);
+        kernel->brcn_table_r[i] = (int)floor(result);
+    }
     
-    calc_slope_intercept(
-        scan_brightness,
-        scan_contrast,
-        &(kernel->scan_slope),
-        &(kernel->scan_intercept));
+    for (i = 0; i <= in_fmt->g_mask; i++) {
+        result = brcn_filter_process(brcn_filter_green, i);
+        kernel->brcn_table_g[i] = (int)floor(result);
+    }
+    
+    for (i = 0; i <= in_fmt->b_mask; i++) {
+        result = brcn_filter_process(brcn_filter_blue, i);
+        kernel->brcn_table_b[i] = (int)floor(result);
+    }
+    
+    free(brcn_filter_red);
+    free(brcn_filter_green);
+    free(brcn_filter_blue);
 
     return 1;
 }
 
 static float rgb_matrix[3][2][3] = {
-    {{1.15, 1.10, 1.10}, {1.10, 1.15, 1.10}},
-    {{1.10, 1.10, 1.15}, {1.15, 1.10, 1.10}},
-    {{1.10, 1.15, 1.10}, {1.10, 1.10, 1.15}}
+    {{1.05f, 1.00f, 1.00f}, {1.00f, 1.05f, 1.00f}},
+    {{1.00f, 1.00f, 1.05f}, {1.05f, 1.00f, 1.00f}},
+    {{1.00f, 1.05f, 1.00f}, {1.00f, 1.00f, 1.05f}},
 };
 
 /*
@@ -85,16 +140,16 @@ void tv2x_process(
     uint32_t in_r, in_g, in_b;
     uint32_t out_r, out_g, out_b;
     
-    int out_width, out_height;
+    //int out_width, out_height;
     
     tv2x_in_type    *in_ptr;
     tv2x_in_type    *out_ptr;
     
-    uint8_t linear[2][3];
+    uint32_t linear[2][3];
     uint32_t shift_mask;
     
-    out_width = in_width * 2;
-    out_height = in_height * 2;
+    //out_width = in_width * 2;
+    //out_height = in_height * 2;
     
     /* Bit hack that allows fast "divide by two" on packed RGB values */
     shift_mask =
@@ -103,69 +158,122 @@ void tv2x_process(
                 & (~(1 << kernel->in_format->g_shift))
                 & (~(1 << kernel->in_format->b_shift));
     
+    #define DIVIDE_TWO(IN) ((IN) >> 1)
+    
+    #define APPLY_CONTRAST(IN, TABLE)\
+        (IN) = (TABLE)[(IN)];
+    
+    #define CLAMP_OUTPUT()\
+        if (out_r > kernel->in_format->r_mask) out_r = kernel->in_format->r_mask;\
+        if (out_g > kernel->in_format->g_mask) out_g = kernel->in_format->g_mask;\
+        if (out_b > kernel->in_format->b_mask) out_b = kernel->in_format->b_mask;
+    
+    #if 0
+        #define APPLY_OUT_MATRIX(COLUMN)\
+            out_r = (float)linear[(COLUMN)][0] * rgb_matrix[(x+(y%2))%3][(COLUMN)][0];\
+            out_g = (float)linear[(COLUMN)][1] * rgb_matrix[(x+(y%2))%3][(COLUMN)][1];\
+            out_b = (float)linear[(COLUMN)][2] * rgb_matrix[(x+(y%2))%3][(COLUMN)][2];
+    #else
+        #define APPLY_OUT_MATRIX(COLUMN)\
+            out_r = linear[(COLUMN)][0];\
+            out_g = linear[(COLUMN)][1];\
+            out_b = linear[(COLUMN)][2];
+    #endif
+    
     for (y = 0; y < in_height; y++) {
-        i1 = (y * in_width);
-        i2 = (y * out_width * 2);
+        //i1 = (y * in_width);
+        //i2 = (y * out_width * 2);
+        i1 = (y * in_pitch);
+        i2 = (y * out_pitch * 4);
         
         in_ptr = &in[i1];
         out_ptr = &out[i2];
         
-        for (x = 0; x < in_width; x++) {
-            if (x == 0) {
-                UNPACK_RGB(in_r, in_g, in_b, (*kernel->in_format), *in_ptr);
-                linear[0][0] = in_r/3;
-                linear[0][1] = in_g/3;
-                linear[0][2] = in_b/3;
-                linear[1][0] = in_r;
-                linear[1][1] = in_g;
-                linear[1][2] = in_b;
-                UNPACK_RGB(in_r, in_g, in_b, (*kernel->in_format), *(in_ptr+1));
-            } else if (x+1 < in_width) {
-                linear[0][0] = in_r;
-                linear[0][1] = in_g;
-                linear[0][2] = in_b;
-                UNPACK_RGB(in_r, in_g, in_b, (*kernel->in_format), *(in_ptr+1));
-                linear[1][0] = (linear[0][0]+in_r)/2;
-                linear[1][1] = (linear[0][1]+in_g)/2;
-                linear[1][2] = (linear[0][2]+in_b)/2;
-            } else {
-                linear[0][0] = in_r;
-                linear[0][1] = in_g;
-                linear[0][2] = in_b;
-                linear[1][0] = in_r/3;
-                linear[1][1] = in_g/3;
-                linear[1][2] = in_b/3;
-            }
+        /* Unpack first pixel */
+        UNPACK_RGB(in_r, in_g, in_b, (*kernel->in_format), *in_ptr);
+        APPLY_CONTRAST(in_r, kernel->brcn_table_r);
+        APPLY_CONTRAST(in_g, kernel->brcn_table_g);
+        APPLY_CONTRAST(in_b, kernel->brcn_table_b);
+        
+        for (x = 0; x < in_width-1; x++) {
+            linear[0][0] = DIVIDE_TWO(in_r);
+            linear[0][1] = DIVIDE_TWO(in_g);
+            linear[0][2] = DIVIDE_TWO(in_b);
             
-            out_r = (float)linear[0][0] * rgb_matrix[(x+(y%2))%3][0][0];
-            out_g = (float)linear[0][1] * rgb_matrix[(x+(y%2))%3][0][1];
-            out_b = (float)linear[0][2] * rgb_matrix[(x+(y%2))%3][0][2];
+            /* Unpack next pixel */
+            UNPACK_RGB(in_r, in_g, in_b, (*kernel->in_format), *(in_ptr+1));
+            APPLY_CONTRAST(in_r, kernel->brcn_table_r);
+            APPLY_CONTRAST(in_g, kernel->brcn_table_g);
+            APPLY_CONTRAST(in_b, kernel->brcn_table_b);
             
-            if (out_r > kernel->in_format->r_mask) out_r = kernel->in_format->r_mask;
-            if (out_g > kernel->in_format->g_mask) out_g = kernel->in_format->g_mask;
-            if (out_b > kernel->in_format->b_mask) out_b = kernel->in_format->b_mask;
+            /* Basicall (a+b)/2, where a is the current pixel, and b is the next pixel. */
+            linear[0][0] += DIVIDE_TWO(in_r);
+            linear[0][1] += DIVIDE_TWO(in_g);
+            linear[0][2] += DIVIDE_TWO(in_b);
             
+            /* Then get linear of current and next... Since there are only two columns
+               to fill, this is just: (a+b)/2 */
+            linear[1][0] = DIVIDE_TWO(linear[0][0]+in_r);
+            linear[1][1] = DIVIDE_TWO(linear[0][1]+in_g);
+            linear[1][2] = DIVIDE_TWO(linear[0][2]+in_b);
+        
+            /* Run linear through out matrix to get out_r, out_g, out_b */
+            APPLY_OUT_MATRIX(0);
+            
+            /* Clamp */
+            CLAMP_OUTPUT();
+            
+            /* Pack to out_ptr */
             PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), *out_ptr);
             
-            /* Fast "divide by two" */
-            *(out_ptr+out_width) = (*out_ptr & shift_mask) >> 1;
+            //*(out_ptr+out_width) = (*out_ptr & shift_mask) >> 1;
             
+            /* Fast "divide by two" for scanline. Uses the value we just packed, with
+               some bit hacks. */
+            *(out_ptr+(out_pitch*2)) = (*out_ptr & shift_mask) >> 1;
+            
+            /* Increment to next column */
             out_ptr++;
-            out_r = (float)linear[1][0] * rgb_matrix[(x+(y%2))%3][1][0];
-            out_g = (float)linear[1][1] * rgb_matrix[(x+(y%2))%3][1][1];
-            out_b = (float)linear[1][2] * rgb_matrix[(x+(y%2))%3][1][2];
+
+            /* Run linear through out matrix to get out_r, out_g, out_b */
+            APPLY_OUT_MATRIX(1);
             
-            if (out_r > kernel->in_format->r_mask) out_r = kernel->in_format->r_mask;
-            if (out_g > kernel->in_format->g_mask) out_g = kernel->in_format->g_mask;
-            if (out_b > kernel->in_format->b_mask) out_b = kernel->in_format->b_mask;
+            /* Clamp */
+            CLAMP_OUTPUT();
             
+            /* Pack to out_ptr */
             PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), *out_ptr);
             
+            //*(out_ptr+out_width) = (*out_ptr & shift_mask) >> 1;
+            
             /* Fast "divide by two" */
-            *(out_ptr+out_width) = (*out_ptr & shift_mask) >> 1;
+            *(out_ptr+(out_pitch*2)) = (*out_ptr & shift_mask) >> 1;
             
             in_ptr++;
             out_ptr++;
         }
+        
+        /* Process last two out pixels */
+        linear[0][0] = in_r >> 1;
+        linear[0][1] = in_g >> 1;
+        linear[0][2] = in_b >> 1;
+        linear[1][0] = in_r >> 2;
+        linear[1][1] = in_g >> 2;
+        linear[1][2] = in_b >> 2;
+        
+        APPLY_OUT_MATRIX(0);
+        CLAMP_OUTPUT();
+        PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), *out_ptr);
+        
+        *(out_ptr+(out_pitch*2)) = (*out_ptr & shift_mask) >> 1;
+        out_ptr++;
+        
+        APPLY_OUT_MATRIX(1);
+        CLAMP_OUTPUT();
+        PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), *out_ptr);
+            
+        /* Fast "divide by two" */
+        //*(out_ptr+out_width) = (*out_ptr & shift_mask) >> 1;
+        *(out_ptr+(out_pitch*2)) = (*out_ptr & shift_mask) >> 1;
     }
 }

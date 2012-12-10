@@ -37,8 +37,8 @@ int main(int argc, char **argv)
     /* Initialize kernel */
     tv2x_init_kernel(
             &kern,
-            0.0f,
-            0.0f,
+            8.0f,
+            16.0f,
             20.0f,
             10.0f,
             &tv4x_rgb_format_rgb24);
@@ -72,8 +72,8 @@ void tv2x_process(
             &kern,
             in,
             out,
-            0,
-            0,
+            width,
+            width,
             width,
             height);
 

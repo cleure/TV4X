@@ -384,37 +384,6 @@ class Image(object):
                 i2 = ((y2 - 1) * self.width) + (x2 - 1)
                 scaled[i] = self.data[i2]
         
-        """
-        scale_x = width / self.width
-        scale_y = height / self.height
-        
-        for y in range(0, self.height):
-            y2 = int(math.ceil((float(y) * scale_y) + 0.5))
-            y2 -= 1
-            
-            for x in range(0, self.width):
-                x2 = int(math.ceil((float(x) * scale_x) + 0.5))
-                x2 -= 1
-                
-                i = (y * self.width) + x
-                i2 = y2 * width + x2
-                scaled[i2] = self.data[i]
-                
-                l = 1
-                L = scale_x+1
-                
-                while l < L:
-                    try:
-                        r = self.data[i][0] + l * ((self.data[i+1][0] - self.data[i][0]) / L)
-                        g = self.data[i][1] + l * ((self.data[i+1][1] - self.data[i][1]) / L)
-                        b = self.data[i][2] + l * ((self.data[i+1][2] - self.data[i][2]) / L)
-                    
-                        for a in range(0, scale_y+1):
-                            scaled[i2+l+(width*a)] = [r, g, b]
-                    except: pass
-                    l += 1
-        """
-        
         return Image(width, height, scaled)
     
     def filter_noise(self, noise_max=16, noise_probability=0.75, data=None):
@@ -451,6 +420,48 @@ class Image(object):
                     data[i][2] = random.randrange(255-noise_max, 255)
         
         return data
+    
+    def brcn_filter_get_slope(self, brightness, contrast, in_range=255):
+        qrange = in_range
+        qscale = 1.0 / qrange
+        
+        # Slope
+        slope = math.tan((math.pi * (contrast / 100.0 + 1.0) / 4.0))
+        if slope < 0.0: slope = 0.0
+        slope = round(slope, 10)
+        
+        # Intercept
+        intercept = brightness / 100.0 + ((100.0 - brightness) / 200.0) * (1.0 - slope)
+        
+        return {
+                'range': qrange,
+                'scale': qscale,
+                'slope': slope,
+                'intercept': intercept}
+    
+    def brcn_filter_process(self, params, value):
+        qrange = params['range']
+        qscale = params['scale']
+        slope = params['slope']
+        intercept = params['intercept']
+    
+        value = ((slope * qscale) * value + intercept) * qrange
+        if value > qrange:
+            value = qrange
+        elif value < 0:
+            value = 0
+    
+        return value
+    
+    """
+    
+import math
+    
+im = Image()
+f = im.brcn_filter_get_slope(2.0, 10.0, 255)
+print im.brcn_filter_process(f, 255)
+    
+    """
     
     def filter_contrast(self, brightness=0.0, contrast=0.0, data=None):
         """ Brightness / Contrast Filter """

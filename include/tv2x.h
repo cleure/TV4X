@@ -20,11 +20,9 @@ struct tv2x_kernel {
     float scan_brightness;
     float scan_contrast;
     
-    float slope;
-    float intercept;
-    
-    float scan_slope;
-    float scan_intercept;
+    uint32_t brcn_table_r[256];
+    uint32_t brcn_table_g[256];
+    uint32_t brcn_table_b[256];
     
     struct tv4x_rgb_format *in_format;
     struct tv4x_rgb_format *out_format;
