@@ -16,13 +16,13 @@ double tv4x_rgb15_to_rgb15[3] = {1.0000000000000000, 1.0000000000000000, 1.00000
 
 /* RGB15 Format Definition */
 struct tv4x_rgb_format tv4x_rgb_format_rgb15 = {
-    RGB15_R_MASK,           /* r_mask */
-    RGB15_G_MASK,           /* g_mask */
-    RGB15_B_MASK,           /* b_mask */
+    0x1f,           /* r_mask */
+    0x1f,           /* g_mask */
+    0x1f,           /* b_mask */
     
-    RGB15_R_SHIFT,          /* r_shift */
-    RGB15_G_SHIFT,          /* g_shift */
-    RGB15_B_SHIFT,          /* b_shift */
+    10,          /* r_shift */
+    5,           /* g_shift */
+    0,           /* b_shift */
     
     &tv4x_rgb15_to_rgb24,   /* to RGB24 conversion table */
     &tv4x_rgb15_to_rgb16,   /* to RGB16 conversion table */
@@ -31,13 +31,13 @@ struct tv4x_rgb_format tv4x_rgb_format_rgb15 = {
 
 /* RGB16 Format Definition */
 struct tv4x_rgb_format tv4x_rgb_format_rgb16 = {
-    RGB16_R_MASK,           /* r_mask */
-    RGB16_G_MASK,           /* g_mask */
-    RGB16_B_MASK,           /* b_mask */
+    0x1f,           /* r_mask */
+    0x3f,           /* g_mask */
+    0x1f,           /* b_mask */
     
-    RGB16_R_SHIFT,          /* r_shift */
-    RGB16_G_SHIFT,          /* g_shift */
-    RGB16_B_SHIFT,          /* b_shift */
+    11,          /* r_shift */
+    5,           /* g_shift */
+    0,           /* b_shift */
     
     &tv4x_rgb16_to_rgb24,   /* to RGB24 conversion table */
     &tv4x_rgb16_to_rgb16,   /* to RGB16 conversion table */
@@ -46,13 +46,13 @@ struct tv4x_rgb_format tv4x_rgb_format_rgb16 = {
 
 /* RGB24 Format Definition */
 struct tv4x_rgb_format tv4x_rgb_format_rgb24 = {
-    RGB24_R_MASK,           /* r_mask */
-    RGB24_G_MASK,           /* g_mask */
-    RGB24_B_MASK,           /* b_mask */
+    0xff,           /* r_mask */
+    0xff,           /* g_mask */
+    0xff,           /* b_mask */
     
-    RGB24_R_SHIFT,          /* r_shift */
-    RGB24_G_SHIFT,          /* g_shift */
-    RGB24_B_SHIFT,          /* b_shift */
+    16,          /* r_shift */
+    8,           /* g_shift */
+    0,           /* b_shift */
     
     &tv4x_rgb24_to_rgb24,   /* to RGB24 conversion table */
     &tv4x_rgb24_to_rgb16,   /* to RGB16 conversion table */
