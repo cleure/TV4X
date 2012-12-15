@@ -92,6 +92,8 @@ int tv2x_init_kernel(
     brcn_filter_green = brcn_get_filter(brightness, contrast, in_fmt->g_mask);
     brcn_filter_blue = brcn_get_filter(brightness, contrast, in_fmt->b_mask);
     
+    /* TODO: Controlable Red/Green/Blue levels */
+    
     for (i = 0; i <= in_fmt->r_mask; i++) {
         result = brcn_filter_process(brcn_filter_red, i);
         kernel->brcn_table_r[i] = (int)floor(result);
@@ -115,9 +117,14 @@ int tv2x_init_kernel(
 }
 
 static float rgb_matrix[3][2][3] = {
+    {{1.10f, 1.00f, 1.00f}, {1.00f, 1.10f, 1.00f}},
+    {{1.00f, 1.00f, 1.10f}, {1.10f, 1.00f, 1.00f}},
+    {{1.00f, 1.10f, 1.00f}, {1.00f, 1.00f, 1.10f}},
+    
+    /*
     {{1.05f, 1.00f, 1.00f}, {1.00f, 1.05f, 1.00f}},
     {{1.00f, 1.00f, 1.05f}, {1.05f, 1.00f, 1.00f}},
-    {{1.00f, 1.05f, 1.00f}, {1.00f, 1.00f, 1.05f}},
+    {{1.00f, 1.05f, 1.00f}, {1.00f, 1.00f, 1.05f}},*/
 };
 
 /*
@@ -152,11 +159,8 @@ void tv2x_process(
     //out_height = in_height * 2;
     
     /* Bit hack that allows fast "divide by two" on packed RGB values */
-    shift_mask =
-            0xffffffff
-                & (~(1 << kernel->in_format->r_shift))
-                & (~(1 << kernel->in_format->g_shift))
-                & (~(1 << kernel->in_format->b_shift));
+    PACK_RGB(1, 1, 1, (*kernel->out_format), shift_mask);
+    shift_mask = ~ shift_mask;
     
     #define DIVIDE_TWO(IN) ((IN) >> 1)
     

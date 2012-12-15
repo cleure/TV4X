@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     tv2x_init_kernel(
             &kern,
             8.0f,
-            16.0f,
+            18.0f,
             20.0f,
             10.0f,
             &tv4x_rgb_format_rgb24);
