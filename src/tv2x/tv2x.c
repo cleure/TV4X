@@ -11,6 +11,19 @@
     static const float PI = 3.141592653589793f;
 #endif
 
+/*
+
+TODO:
+    - CMake based build system.
+    - Get rid of "tv4x_" prefix for rgb formats and structs. Instead use something
+      like "tvxx_", and/or wrap around it with #define's
+    - Merge common code between tv4x and tv2x.
+    - Common internal header... Would handle INLINE, RESTRICT, rgb stuff, etc.
+    - Tool to package up source/header files into a single source/header file,
+      for easy integration into existing projects.
+
+*/
+
 /**
 * Allocate memory, and pre-process data for brightness/contrast filter.
 *
