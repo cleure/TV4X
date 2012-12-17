@@ -14,12 +14,14 @@
 		601A2B94167D0E5E001EE155 /* package-tv2x.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; name = "package-tv2x.py"; path = "../../package-tv2x.py"; sourceTree = "<group>"; };
 		6027ADF815E9442400307BE7 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
 		6027ADFA15E9442C00307BE7 /* prototype */ = {isa = PBXFileReference; lastKnownFileType = folder; name = prototype; path = ../../prototype; sourceTree = "<group>"; };
+		60A6250E167FB02700777661 /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = CMakeLists.txt; path = ../../CMakeLists.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		60193DA515E405C4003094EC = {
 			isa = PBXGroup;
 			children = (
+				60A6250E167FB02700777661 /* CMakeLists.txt */,
 				6027ADF815E9442400307BE7 /* README.md */,
 				601A2B94167D0E5E001EE155 /* package-tv2x.py */,
 				6027ADFA15E9442C00307BE7 /* prototype */,
