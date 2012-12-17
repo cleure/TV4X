@@ -35,10 +35,10 @@ void tv2x_process(
             struct tv2x_kernel *k,
             tv2x_in_type * TVXX_RESTRICT in,
             tv2x_out_type * TVXX_RESTRICT out,
-            int in_pitch,
-            int out_pitch,
-            int in_width,
-            int in_height);
+            uint32_t in_pitch,
+            uint32_t out_pitch,
+            uint32_t in_width,
+            uint32_t in_height);
 
 #ifdef __cplusplus
     }

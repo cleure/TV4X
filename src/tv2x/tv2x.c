@@ -14,6 +14,7 @@
 /*
 
 TODO:
+    - in_pitch / out_pitch is currently incorrect.
     - rgb_* functions need to be renamed to tvxx_rgb_*... Is rgb_convert() even
       needed in rgb.c? It isn't used outside of the tests.
     - Merge common code between tv4x and tv2x.
@@ -148,20 +149,20 @@ void tv2x_process(
             struct tv2x_kernel *kernel,
             tv2x_in_type * TVXX_RESTRICT in,
             tv2x_out_type * TVXX_RESTRICT out,
-            int in_pitch,
-            int out_pitch,
-            int in_width,
-            int in_height) {
+            uint32_t in_pitch,
+            uint32_t out_pitch,
+            uint32_t in_width,
+            uint32_t in_height) {
     
     int x, y;
-    int i1, i2;
+    //int i1, i2;
     uint32_t in_r, in_g, in_b;
     uint32_t out_r, out_g, out_b;
     
     //int out_width, out_height;
     
     tv2x_in_type    *in_ptr;
-    tv2x_in_type    *out_ptr;
+    tv2x_in_type    *out_ptr, *out_ptr2;
     
     uint32_t linear[2][3];
     uint32_t shift_mask;
@@ -196,13 +197,15 @@ void tv2x_process(
     #endif
     
     for (y = 0; y < in_height; y++) {
-        //i1 = (y * in_width);
-        //i2 = (y * out_width * 2);
-        i1 = (y * in_pitch);
-        i2 = (y * out_pitch * 4);
+        //i1 = (y * in_pitch);
+        //i2 = (y * out_pitch * 4);
         
-        in_ptr = &in[i1];
-        out_ptr = &out[i2];
+        in_ptr = (tv2x_in_type *) ((uint8_t *) in + y * in_pitch);
+        out_ptr = (tv2x_out_type *) ((uint8_t *) out + y * 2 * out_pitch);
+        out_ptr2 = (tv2x_out_type *) ((uint8_t *) out + ((y * 2) + 1) * out_pitch);
+        
+        //in_ptr = &in[i1];
+        //out_ptr = &out[i2];
         
         /* Unpack first pixel */
         UNPACK_RGB(in_r, in_g, in_b, (*kernel->in_format), *in_ptr);
@@ -245,7 +248,8 @@ void tv2x_process(
             
             /* Fast "divide by two" for scanline. Uses the value we just packed, with
                some bit hacks. */
-            *(out_ptr+(out_pitch*2)) = (*out_ptr & shift_mask) >> 1;
+            //*(out_ptr+(out_pitch*2)) = (*out_ptr & shift_mask) >> 1;
+            *(out_ptr2)++ = (*out_ptr & shift_mask) >> 1;
             
             /* Increment to next column */
             out_ptr++;
@@ -262,7 +266,8 @@ void tv2x_process(
             //*(out_ptr+out_width) = (*out_ptr & shift_mask) >> 1;
             
             /* Fast "divide by two" */
-            *(out_ptr+(out_pitch*2)) = (*out_ptr & shift_mask) >> 1;
+            //*(out_ptr+(out_pitch*2)) = (*out_ptr & shift_mask) >> 1;
+            *(out_ptr2)++ = (*out_ptr & shift_mask) >> 1;
             
             in_ptr++;
             out_ptr++;
@@ -280,7 +285,7 @@ void tv2x_process(
         CLAMP_OUTPUT();
         PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), *out_ptr);
         
-        *(out_ptr+(out_pitch*2)) = (*out_ptr & shift_mask) >> 1;
+        *(out_ptr2)++ = (*out_ptr & shift_mask) >> 1;
         out_ptr++;
         
         APPLY_OUT_MATRIX(1);
@@ -289,6 +294,6 @@ void tv2x_process(
             
         /* Fast "divide by two" */
         //*(out_ptr+out_width) = (*out_ptr & shift_mask) >> 1;
-        *(out_ptr+(out_pitch*2)) = (*out_ptr & shift_mask) >> 1;
+        *(out_ptr2)++ = (*out_ptr & shift_mask) >> 1;
     }
 }

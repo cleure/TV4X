@@ -22,6 +22,21 @@ int main(int argc, char **argv)
     tv2x_in_type *in;
     tv2x_out_type *out;
     
+    /*
+    uint8_t *buffer8 = (void *)0xaabbccdd;
+    uint16_t *buffer16 = (void *)0xaabbccdd;
+    uint32_t *buffer32 = (void *)0xaabbccdd;
+    
+    buffer8 = &buffer8[32 * 1024];
+    buffer16 = &((uint8_t *)buffer16)[32 * 1024];
+    buffer32 = &buffer32[32 * 1024];
+    
+    printf("%p\n", (void *)buffer8);
+    printf("%p\n", (void *)buffer16);
+    printf("%p\n", (void *)buffer32);
+    
+    exit(0);*/
+    
     if (argc < 2) {
         fprintf(stderr, "Usage: test-filter <input PNG>\n");
         exit(1);
@@ -56,12 +71,12 @@ int tv2x_init_kernel(
 
 void tv2x_process(
             struct tv2x_kernel *k,
-            tv2x_in_type *in,
-            tv2x_out_type *out,
-            int in_pitch,
-            int out_pitch,
-            int in_width,
-            int in_height);
+            tv2x_in_type * TVXX_RESTRICT in,
+            tv2x_out_type * TVXX_RESTRICT out,
+            uint32_t in_pitch,
+            uint32_t out_pitch,
+            uint32_t in_width,
+            uint32_t in_height);
     
     */
     
@@ -72,8 +87,8 @@ void tv2x_process(
             &kern,
             in,
             out,
-            width,
-            width,
+            width*sizeof(*in),
+            width*sizeof(*out)*2,
             width,
             height);
 
