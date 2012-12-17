@@ -1,3 +1,5 @@
+#ifndef TVXX_INTERNAL_H
+#define TVXX_INTERNAL_H
 
 #if defined(_MSC_VER)
     #define TVXX_INLINE __forceinline
@@ -30,3 +32,5 @@
 #ifndef tv2x_out_type
     #define tv2x_out_type uint32_t
 #endif
+
+/* TVXX_INTERNAL_H */ #endif
