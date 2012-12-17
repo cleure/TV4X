@@ -1,6 +1,5 @@
-#pragma once
-#ifndef TV4X_RGB_H
-#define TV4X_RGB_H
+#ifndef TVXX_RGB_H
+#define TVXX_RGB_H
 
 #include <stdint.h>
 
@@ -100,4 +99,5 @@ void rgb_convert(
 #ifdef __cplusplus
     }
 #endif
-#endif
+
+/* TVXX_RGB_H */ #endif

@@ -1,6 +1,5 @@
-#pragma once
-#ifndef TV4X_YIQ_H
-#define TV4X_YIQ_H
+#ifndef TVXX_YIQ_H
+#define TVXX_YIQ_H
 
 #include <stdint.h>
 
@@ -29,4 +28,5 @@ void tv4x_yiq_to_rgb_unpacked(
 #ifdef __cplusplus
     }
 #endif
-#endif
+
+/* TVXX_YIQ_H */ #endif

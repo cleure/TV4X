@@ -1,6 +1,5 @@
-#pragma once
-#ifndef TV4X_PNGUTIL_H
-#define TV4X_PNGUTIL_H
+#ifndef TVXX_PNGUTIL_H
+#define TVXX_PNGUTIL_H
 
 #include <stdint.h>
 
@@ -26,4 +25,5 @@ int rgb24_to_png(uint32_t *buffer, int width, int height, char *path);
 #ifdef __cplusplus
     }
 #endif
-#endif
+
+/* TVXX_PNGUTIL_H */ #endif

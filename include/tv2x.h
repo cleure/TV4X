@@ -1,4 +1,6 @@
-#pragma once
+#ifndef TV2X_H
+#define TV2X_H
+
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -48,3 +50,5 @@ void tv2x_process(
 #ifdef __cplusplus
     }
 #endif
+
+/* TV2X_H */ #endif

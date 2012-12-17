@@ -1,6 +1,5 @@
-#pragma once
-#ifndef TV4X_TV4X_H
-#define TV4X_TV4X_H
+#ifndef TV4X_H
+#define TV4X_H
 
 #include <stdint.h>
 
@@ -11,10 +10,6 @@
 /* Input/Output Data Types */
 #ifndef tv4x_in_type
     #define tv4x_in_type uint32_t
-#endif
-
-#ifndef tv4x_out_type
-    #define tv4x_out_type uint32_t
 #endif
 
 #if defined(_MSC_VER)
@@ -102,4 +97,5 @@ void tv4x_process(
 #ifdef __cplusplus
     }
 #endif
-#endif
+
+/* TV4X_H */ #endif
