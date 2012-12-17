@@ -7,14 +7,7 @@
     extern "C" {
 #endif
 
-/* Input/Output Data Types */
-#ifndef tv2x_in_type
-    #define tv2x_in_type uint32_t
-#endif
-
-#ifndef tv2x_out_type
-    #define tv2x_out_type uint32_t
-#endif
+#include "tvxx_internal.h"
 
 struct tv2x_kernel {
     float brightness;
@@ -26,8 +19,8 @@ struct tv2x_kernel {
     uint32_t brcn_table_g[256];
     uint32_t brcn_table_b[256];
     
-    struct tv4x_rgb_format *in_format;
-    struct tv4x_rgb_format *out_format;
+    struct tvxx_rgb_format *in_format;
+    struct tvxx_rgb_format *out_format;
 };
 
 int tv2x_init_kernel(
@@ -36,12 +29,12 @@ int tv2x_init_kernel(
             float contrast,
             float scan_brightness,
             float scan_contrast,
-            struct tv4x_rgb_format *in_fmt);
+            struct tvxx_rgb_format *in_fmt);
 
 void tv2x_process(
             struct tv2x_kernel *k,
-            tv2x_in_type * __restrict__ in,
-            tv2x_out_type * __restrict__ out,
+            tv2x_in_type * TVXX_RESTRICT in,
+            tv2x_out_type * TVXX_RESTRICT out,
             int in_pitch,
             int out_pitch,
             int in_width,

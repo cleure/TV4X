@@ -17,7 +17,6 @@ TODO:
     - Get rid of "tv4x_" prefix for rgb formats and structs. Instead use something
       like "tvxx_", and/or wrap around it with #define's
     - Merge common code between tv4x and tv2x.
-    - Common internal header... Would handle INLINE, RESTRICT, rgb stuff, etc.
     - Tool to package up source/header files into a single source/header file,
       for easy integration into existing projects.
 
@@ -83,7 +82,7 @@ int tv2x_init_kernel(
             float contrast,
             float scan_brightness,
             float scan_contrast,
-            struct tv4x_rgb_format *in_fmt) {
+            struct tvxx_rgb_format *in_fmt) {
     
     int i;
     double result;
@@ -147,8 +146,8 @@ RG BR GB
 
 void tv2x_process(
             struct tv2x_kernel *kernel,
-            tv2x_in_type * __restrict__ in,
-            tv2x_out_type * __restrict__ out,
+            tv2x_in_type * TVXX_RESTRICT in,
+            tv2x_out_type * TVXX_RESTRICT out,
             int in_pitch,
             int out_pitch,
             int in_width,

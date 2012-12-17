@@ -41,7 +41,7 @@ int main(int argc, char **argv)
             18.0f,
             20.0f,
             10.0f,
-            &tv4x_rgb_format_rgb24);
+            &tvxx_rgb_format_rgb24);
     
     /*
     
@@ -51,8 +51,8 @@ int tv2x_init_kernel(
             float contrast,
             float scan_brightness,
             float scan_contrast,
-            struct tv4x_rgb_format *in_fmt,
-            struct tv4x_rgb_format *out_fmt);
+            struct tvxx_rgb_format *in_fmt,
+            struct tvxx_rgb_format *out_fmt);
 
 void tv2x_process(
             struct tv2x_kernel *k,

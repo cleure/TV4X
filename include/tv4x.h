@@ -7,21 +7,9 @@
     extern "C" {
 #endif
 
+#include "tvxx_internal.h"
+
 /* Input/Output Data Types */
-#ifndef tv4x_in_type
-    #define tv4x_in_type uint32_t
-#endif
-
-#if defined(_MSC_VER)
-    #define TV4X_INLINE __forceinline
-#elif defined(__GNUC__)
-    #define TV4X_INLINE __inline
-#elif defined(__clang__)
-    #define TV4X_INLINE __inline
-#else
-    #define TV4X_INLINE
-#endif
-
 struct tv4x_setup {
     float y_events;
     float i_events;
@@ -49,8 +37,8 @@ extern float tv4x_crt_stich_phosphor[2][16][3];
 
 struct tv4x_kernel {
     /* I/O Formats */
-    struct tv4x_rgb_format *in_fmt;
-    struct tv4x_rgb_format *out_fmt;
+    struct tvxx_rgb_format *in_fmt;
+    struct tvxx_rgb_format *out_fmt;
     
     /* Setup Type */
     struct tv4x_setup *setup;
@@ -70,8 +58,8 @@ struct tv4x_kernel {
 
 int tv4x_init_kernel(
         struct tv4x_kernel *k,
-        struct tv4x_rgb_format *in_fmt,
-        struct tv4x_rgb_format *out_fmt,
+        struct tvxx_rgb_format *in_fmt,
+        struct tvxx_rgb_format *out_fmt,
         struct tv4x_setup *setup,
         float crt_mask[2][16],
         float crt_rgb[2][16][3],

@@ -4,18 +4,18 @@
 #include "rgb.h"
 
 /* RGB Format Conversion Tables */
-double tv4x_rgb24_to_rgb24[3] = {1.0000000000000000, 1.0000000000000000, 1.0000000000000000  };
-double tv4x_rgb24_to_rgb16[3] = {0.1215686274509804, 0.2470588235294118, 0.1215686274509804  };
-double tv4x_rgb24_to_rgb15[3] = {0.1215686274509804, 0.1215686274509804, 0.1215686274509804  };
-double tv4x_rgb16_to_rgb24[3] = {8.2258064516129039, 4.0476190476190474, 8.2258064516129039  };
-double tv4x_rgb16_to_rgb16[3] = {1.0000000000000000, 1.0000000000000000, 1.0000000000000000  };
-double tv4x_rgb16_to_rgb15[3] = {1.0000000000000000, 0.4920634920634920, 1.0000000000000000  };
-double tv4x_rgb15_to_rgb24[3] = {8.2258064516129039, 8.2258064516129039, 8.2258064516129039  };
-double tv4x_rgb15_to_rgb16[3] = {1.0000000000000000, 2.0322580645161290, 1.0000000000000000  };
-double tv4x_rgb15_to_rgb15[3] = {1.0000000000000000, 1.0000000000000000, 1.0000000000000000  };
+double tvxx_rgb24_to_rgb24[3] = {1.0000000000000000, 1.0000000000000000, 1.0000000000000000  };
+double tvxx_rgb24_to_rgb16[3] = {0.1215686274509804, 0.2470588235294118, 0.1215686274509804  };
+double tvxx_rgb24_to_rgb15[3] = {0.1215686274509804, 0.1215686274509804, 0.1215686274509804  };
+double tvxx_rgb16_to_rgb24[3] = {8.2258064516129039, 4.0476190476190474, 8.2258064516129039  };
+double tvxx_rgb16_to_rgb16[3] = {1.0000000000000000, 1.0000000000000000, 1.0000000000000000  };
+double tvxx_rgb16_to_rgb15[3] = {1.0000000000000000, 0.4920634920634920, 1.0000000000000000  };
+double tvxx_rgb15_to_rgb24[3] = {8.2258064516129039, 8.2258064516129039, 8.2258064516129039  };
+double tvxx_rgb15_to_rgb16[3] = {1.0000000000000000, 2.0322580645161290, 1.0000000000000000  };
+double tvxx_rgb15_to_rgb15[3] = {1.0000000000000000, 1.0000000000000000, 1.0000000000000000  };
 
 /* RGB15 Format Definition */
-struct tv4x_rgb_format tv4x_rgb_format_rgb15 = {
+struct tvxx_rgb_format tvxx_rgb_format_rgb15 = {
     0x1f,           /* r_mask */
     0x1f,           /* g_mask */
     0x1f,           /* b_mask */
@@ -24,13 +24,13 @@ struct tv4x_rgb_format tv4x_rgb_format_rgb15 = {
     5,           /* g_shift */
     0,           /* b_shift */
     
-    &tv4x_rgb15_to_rgb24,   /* to RGB24 conversion table */
-    &tv4x_rgb15_to_rgb16,   /* to RGB16 conversion table */
-    &tv4x_rgb15_to_rgb15,   /* to RGB15 conversion table */
+    &tvxx_rgb15_to_rgb24,   /* to RGB24 conversion table */
+    &tvxx_rgb15_to_rgb16,   /* to RGB16 conversion table */
+    &tvxx_rgb15_to_rgb15,   /* to RGB15 conversion table */
 };
 
 /* RGB16 Format Definition */
-struct tv4x_rgb_format tv4x_rgb_format_rgb16 = {
+struct tvxx_rgb_format tvxx_rgb_format_rgb16 = {
     0x1f,           /* r_mask */
     0x3f,           /* g_mask */
     0x1f,           /* b_mask */
@@ -39,13 +39,13 @@ struct tv4x_rgb_format tv4x_rgb_format_rgb16 = {
     5,           /* g_shift */
     0,           /* b_shift */
     
-    &tv4x_rgb16_to_rgb24,   /* to RGB24 conversion table */
-    &tv4x_rgb16_to_rgb16,   /* to RGB16 conversion table */
-    &tv4x_rgb16_to_rgb15,   /* to RGB15 conversion table */
+    &tvxx_rgb16_to_rgb24,   /* to RGB24 conversion table */
+    &tvxx_rgb16_to_rgb16,   /* to RGB16 conversion table */
+    &tvxx_rgb16_to_rgb15,   /* to RGB15 conversion table */
 };
 
 /* RGB24 Format Definition */
-struct tv4x_rgb_format tv4x_rgb_format_rgb24 = {
+struct tvxx_rgb_format tvxx_rgb_format_rgb24 = {
     0xff,           /* r_mask */
     0xff,           /* g_mask */
     0xff,           /* b_mask */
@@ -54,28 +54,28 @@ struct tv4x_rgb_format tv4x_rgb_format_rgb24 = {
     8,           /* g_shift */
     0,           /* b_shift */
     
-    &tv4x_rgb24_to_rgb24,   /* to RGB24 conversion table */
-    &tv4x_rgb24_to_rgb16,   /* to RGB16 conversion table */
-    &tv4x_rgb24_to_rgb15,   /* to RGB15 conversion table */
+    &tvxx_rgb24_to_rgb24,   /* to RGB24 conversion table */
+    &tvxx_rgb24_to_rgb16,   /* to RGB16 conversion table */
+    &tvxx_rgb24_to_rgb15,   /* to RGB15 conversion table */
 };
 
 /* Lookup table for rgb_conversion_table() */
 struct format_lookup_table {
-    struct tv4x_rgb_format *in;
-    struct tv4x_rgb_format *out;
+    struct tvxx_rgb_format *in;
+    struct tvxx_rgb_format *out;
     double (*cnvtable)[3];
 };
 
 static struct format_lookup_table fmt_lk_table[] = {
-    {&tv4x_rgb_format_rgb15, &tv4x_rgb_format_rgb15, &tv4x_rgb15_to_rgb15},
-    {&tv4x_rgb_format_rgb15, &tv4x_rgb_format_rgb16, &tv4x_rgb15_to_rgb16},
-    {&tv4x_rgb_format_rgb15, &tv4x_rgb_format_rgb24, &tv4x_rgb15_to_rgb24},
-    {&tv4x_rgb_format_rgb16, &tv4x_rgb_format_rgb15, &tv4x_rgb16_to_rgb15},
-    {&tv4x_rgb_format_rgb16, &tv4x_rgb_format_rgb16, &tv4x_rgb16_to_rgb16},
-    {&tv4x_rgb_format_rgb16, &tv4x_rgb_format_rgb24, &tv4x_rgb16_to_rgb24},
-    {&tv4x_rgb_format_rgb24, &tv4x_rgb_format_rgb15, &tv4x_rgb24_to_rgb15},
-    {&tv4x_rgb_format_rgb24, &tv4x_rgb_format_rgb16, &tv4x_rgb24_to_rgb16},
-    {&tv4x_rgb_format_rgb24, &tv4x_rgb_format_rgb24, &tv4x_rgb24_to_rgb24},
+    {&tvxx_rgb_format_rgb15, &tvxx_rgb_format_rgb15, &tvxx_rgb15_to_rgb15},
+    {&tvxx_rgb_format_rgb15, &tvxx_rgb_format_rgb16, &tvxx_rgb15_to_rgb16},
+    {&tvxx_rgb_format_rgb15, &tvxx_rgb_format_rgb24, &tvxx_rgb15_to_rgb24},
+    {&tvxx_rgb_format_rgb16, &tvxx_rgb_format_rgb15, &tvxx_rgb16_to_rgb15},
+    {&tvxx_rgb_format_rgb16, &tvxx_rgb_format_rgb16, &tvxx_rgb16_to_rgb16},
+    {&tvxx_rgb_format_rgb16, &tvxx_rgb_format_rgb24, &tvxx_rgb16_to_rgb24},
+    {&tvxx_rgb_format_rgb24, &tvxx_rgb_format_rgb15, &tvxx_rgb24_to_rgb15},
+    {&tvxx_rgb_format_rgb24, &tvxx_rgb_format_rgb16, &tvxx_rgb24_to_rgb16},
+    {&tvxx_rgb_format_rgb24, &tvxx_rgb_format_rgb24, &tvxx_rgb24_to_rgb24},
 };
 
 /**
@@ -87,8 +87,8 @@ static struct format_lookup_table fmt_lk_table[] = {
 * @return   1 on success, 0 on error
 **/
 int rgb_get_conversion_table(
-            struct tv4x_rgb_format *in,
-            struct tv4x_rgb_format *out,
+            struct tvxx_rgb_format *in,
+            struct tvxx_rgb_format *out,
             double (*cnvtable)[3]) {
     
     int i, len;
@@ -114,8 +114,8 @@ int rgb_get_conversion_table(
 * @return   void
 **/
 void rgb_convert(
-                    struct tv4x_rgb_format *in_fmt,
-                    struct tv4x_rgb_format *out_fmt,
+                    struct tvxx_rgb_format *in_fmt,
+                    struct tvxx_rgb_format *out_fmt,
                     uint32_t *in,
                     uint32_t *out,
                     uint32_t size) {

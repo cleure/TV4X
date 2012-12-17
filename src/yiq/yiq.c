@@ -30,8 +30,8 @@ static const float yiq_out_matrix[3][3] = {
 * @param    float *q
 * @return   void
 **/
-void TV4X_INLINE tv4x_rgb_to_yiq(
-        struct tv4x_rgb_format *fmt,
+void TVXX_INLINE tv4x_rgb_to_yiq(
+        struct tvxx_rgb_format *fmt,
         uint32_t rgb,
         float *y,
         float *i,
@@ -65,8 +65,8 @@ void TV4X_INLINE tv4x_rgb_to_yiq(
 * @param    float q
 * @return   void
 **/
-void TV4X_INLINE tv4x_yiq_to_rgb_unpacked(
-        struct tv4x_rgb_format *fmt,
+void TVXX_INLINE tv4x_yiq_to_rgb_unpacked(
+        struct tvxx_rgb_format *fmt,
         uint8_t *ro,
         uint8_t *go,
         uint8_t *bo,
