@@ -14,7 +14,6 @@
 /*
 
 TODO:
-    - CMake based build system.
     - Get rid of "tv4x_" prefix for rgb formats and structs. Instead use something
       like "tvxx_", and/or wrap around it with #define's
     - Merge common code between tv4x and tv2x.
