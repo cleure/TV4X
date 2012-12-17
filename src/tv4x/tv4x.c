@@ -320,8 +320,8 @@ tv4x_process_line(
     i2 = (y * out_pitch);
     
     /* Initial YIQ values */
-    tv4x_rgb_to_yiq(k->in_fmt, in[i1+1], &tmp_yiq[0], &tmp_yiq[1], &tmp_yiq[2]);
-    tv4x_rgb_to_yiq(k->in_fmt, in[i1], &next_yiq[0], &next_yiq[1], &next_yiq[2]);
+    tvxx_rgb_to_yiq(k->in_fmt, in[i1+1], &tmp_yiq[0], &tmp_yiq[1], &tmp_yiq[2]);
+    tvxx_rgb_to_yiq(k->in_fmt, in[i1], &next_yiq[0], &next_yiq[1], &next_yiq[2]);
     
     /*
     
@@ -361,7 +361,7 @@ tv4x_process_line(
         tmp_yiq[1] = next_yiq[1];
         tmp_yiq[2] = next_yiq[2];
         
-        tv4x_rgb_to_yiq(k->in_fmt, in[i1+1], &next_yiq[0], &next_yiq[1], &next_yiq[2]);
+        tvxx_rgb_to_yiq(k->in_fmt, in[i1+1], &next_yiq[0], &next_yiq[1], &next_yiq[2]);
         cur_yiq[0] = tmp_yiq[0];
         
         /* I Events */
@@ -407,7 +407,7 @@ tv4x_process_line(
         work_yiq[2] *= k->dechroma;
         
         /* Get RGB from YIQ */
-        tv4x_yiq_to_rgb_unpacked(k->in_fmt, &r1, &g1, &b1, work_yiq[0], work_yiq[1], work_yiq[2]);
+        tvxx_yiq_to_rgb_unpacked(k->in_fmt, &r1, &g1, &b1, work_yiq[0], work_yiq[1], work_yiq[2]);
         
         #ifdef TV4X_SCALE_DOWN
             r1 *= (31.0f / (float)k->in_fmt->r_mask);

@@ -14,8 +14,8 @@
 /*
 
 TODO:
-    - Get rid of "tv4x_" prefix for rgb formats and structs. Instead use something
-      like "tvxx_", and/or wrap around it with #define's
+    - rgb_* functions need to be renamed to tvxx_rgb_*... Is rgb_convert() even
+      needed in rgb.c? It isn't used outside of the tests.
     - Merge common code between tv4x and tv2x.
     - Tool to package up source/header files into a single source/header file,
       for easy integration into existing projects.

@@ -8,7 +8,7 @@
 #endif
 
 /* Convert RGB15/16/24 to YIQ. */
-void tv4x_rgb_to_yiq(
+void tvxx_rgb_to_yiq(
         struct tvxx_rgb_format *fmt,
         uint32_t rgb,
         float *y,
@@ -16,7 +16,7 @@ void tv4x_rgb_to_yiq(
         float *q);
 
 /* Convert YIQ to RGB15/16/24, unpacked. */
-void tv4x_yiq_to_rgb_unpacked(
+void tvxx_yiq_to_rgb_unpacked(
         struct tvxx_rgb_format *fmt,
         uint8_t *ro,
         uint8_t *go,
