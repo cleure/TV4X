@@ -3,7 +3,7 @@ TV4X
 
 TV4X is a scaling filter, that emulates the look of CRT TVs. The main codebase is written in C, as per the C99 standard, and a framework for fast prototyping (written in Python) is also included.
 
-The main tree currently takes RGB24 input, and produces RGB24 output. Work is currently underway to make it format agnostic.
+TV4X currently includes two filters. A fast 2x scaling filter, and a slower 4x scaling filter.
 
 Compiling
 =========
@@ -30,16 +30,9 @@ The scaling filter performs rather well for the amount of work it does, however,
 TODO List
 =========
 
-- Add something to allow certain features to be turned on/off, so that performance can be tuned to the underlying hardware. Code needs to stay branchless, so this would force multiple versions of tv4x_process_line using preprocessor magic and function pointers.
-    - YIQ Processing
-        - YIQ Blur
-        - YIQ Event Burst (Average/Simple/Off)
-        - Luma/Chroma
-        - Scale RGB up/down
+- Refactor tv4x.c, so its more like tv2x.c (can take any input format, and outputs to the same format)
 - SNES HiRes Support
 - Perhaps YIQ math could be simplified?
-- Support RGB16 and RGB24 Input?... RGB24 would require 32MB of memory :-/
 - Explore ways to make tv4x_process_line branchless.
-- Rename external facing data types and functions, so they're all prefixed with "tv4x_".
-- Experiment with 2x and 3x scaling.
+- Experiment with 3x scaling.
 - See if its possible to implement YIQ with integer math.
