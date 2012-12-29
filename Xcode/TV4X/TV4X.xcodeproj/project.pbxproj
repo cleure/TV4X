@@ -11,7 +11,7 @@
 		60193DAF15E405D7003094EC /* include */ = {isa = PBXFileReference; lastKnownFileType = folder; name = include; path = ../../include; sourceTree = "<group>"; };
 		60193DB015E405D7003094EC /* src */ = {isa = PBXFileReference; lastKnownFileType = folder; name = src; path = ../../src; sourceTree = "<group>"; };
 		60193DB115E406B7003094EC /* tests */ = {isa = PBXFileReference; lastKnownFileType = folder; name = tests; path = ../../tests; sourceTree = "<group>"; };
-		601A2B94167D0E5E001EE155 /* package-tv2x.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; name = "package-tv2x.py"; path = "../../package-tv2x.py"; sourceTree = "<group>"; };
+		601A2B94167D0E5E001EE155 /* package-tvxx.py */ = {isa = PBXFileReference; name = "package-tvxx.py"; path = "../../package-tvxx.py"; sourceTree = "<group>"; };
 		6027ADF815E9442400307BE7 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text; name = README.md; path = ../../README.md; sourceTree = "<group>"; };
 		6027ADFA15E9442C00307BE7 /* prototype */ = {isa = PBXFileReference; lastKnownFileType = folder; name = prototype; path = ../../prototype; sourceTree = "<group>"; };
 		60A6250E167FB02700777661 /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = CMakeLists.txt; path = ../../CMakeLists.txt; sourceTree = "<group>"; };
@@ -23,7 +23,7 @@
 			children = (
 				60A6250E167FB02700777661 /* CMakeLists.txt */,
 				6027ADF815E9442400307BE7 /* README.md */,
-				601A2B94167D0E5E001EE155 /* package-tv2x.py */,
+				601A2B94167D0E5E001EE155 /* package-tvxx.py */,
 				6027ADFA15E9442C00307BE7 /* prototype */,
 				60193DAE15E405D7003094EC /* bin */,
 				60193DAF15E405D7003094EC /* include */,

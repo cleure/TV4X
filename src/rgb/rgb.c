@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <memory.h>
-#include "rgb.h"
 
 /* RGB Format Conversion Tables */
 double tvxx_rgb24_to_rgb24[3] = {1.0000000000000000, 1.0000000000000000, 1.0000000000000000  };

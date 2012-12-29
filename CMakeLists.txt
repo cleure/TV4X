@@ -19,10 +19,7 @@ include_directories(
 add_executable(test-filter
     src/png/convert.c
     src/png/pngutil.c
-    src/rgb/rgb.c
-    src/yiq/yiq.c
-    src/tv4x/shadow_masks.c
-    src/tv4x/tv4x.c
+    _tv4x.c
     tests/test-filter.c
 )
 
@@ -31,8 +28,7 @@ target_link_libraries(test-filter ${PNG_LIBRARY})
 add_executable(test-filter2
     src/png/convert.c
     src/png/pngutil.c
-    src/rgb/rgb.c
-    src/tv2x/tv2x.c
+    _tv2x.c
     tests/test-filter2.c
 )
 

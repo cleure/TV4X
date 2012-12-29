@@ -1,6 +1,3 @@
-#include "tv4x.h"
-#include "rgb.h"
-#include "yiq.h"
 
 #ifdef TV4X_USE_SSE
     #include <xmmintrin.h>

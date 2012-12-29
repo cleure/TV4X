@@ -5,6 +5,7 @@
 
 #include "pngutil.h"
 #include "rgb.h"
+#include "rgb_defines.h"
 
 /**
 * Read PNG file to RGB24 Buffer

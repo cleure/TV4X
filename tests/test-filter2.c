@@ -4,8 +4,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include "rgb.h"
-#include "tv2x.h"
-#include "tv4x.h"
+#include "_tv2x.h"
 #include "pngutil.h"
 
 int main(int argc, char **argv)

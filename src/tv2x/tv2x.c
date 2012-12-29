@@ -4,9 +4,6 @@
 #include <math.h>
 #include <stdint.h>
 
-#include "rgb.h"
-#include "tv2x.h"
-
 #ifndef PI
     static const float PI = 3.141592653589793f;
 #endif
@@ -14,7 +11,6 @@
 /*
 
 TODO:
-    - in_pitch / out_pitch is currently incorrect.
     - rgb_* functions need to be renamed to tvxx_rgb_*... Is rgb_convert() even
       needed in rgb.c? It isn't used outside of the tests.
     - Merge common code between tv4x and tv2x.

@@ -3,10 +3,6 @@
 #include <math.h>
 #include <stdint.h>
 
-#include "rgb.h"
-#include "yiq.h"
-#include "tv4x.h"
-
 #ifndef PI
     static const float PI = 3.141592653589793f;
 #endif

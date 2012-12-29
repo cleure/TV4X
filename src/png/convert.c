@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "rgb.h"
+#include "rgb_defines.h"
 #include "yiq.h"
 
 uint32_t *png_buf_to_rgb24(uint8_t *in, int width, int height)
