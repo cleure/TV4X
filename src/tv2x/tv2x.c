@@ -228,7 +228,7 @@ void tv2x_process(
             out_b = linear[(COLUMN)][2];
     #endif
     
-    #if 1
+    #if TV2X_SCANLINE_MODE_FILTER
         /* Process Scanline, using brightness/contrast filter (slower). */
         #define PROCESS_SCANLINE()\
             PACK_RGB(\
