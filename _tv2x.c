@@ -494,8 +494,6 @@ int tv2x_init_kernel(
     brcn_filter_scan_green = brcn_get_filter(scan_brightness, scan_contrast, in_fmt->g_mask);
     brcn_filter_scan_blue = brcn_get_filter(scan_brightness, scan_contrast, in_fmt->b_mask);
     
-    /* TODO: Controlable Red/Green/Blue levels */
-    
     brcn_ptr1 = &kernel->brcn_table[0];
     brcn_ptr2 = &kernel->brcn_table[768];
     for (i = 0; i <= in_fmt->r_mask; i++) {
