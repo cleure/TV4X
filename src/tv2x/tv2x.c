@@ -77,6 +77,8 @@ int tv2x_init_kernel(
             float contrast,
             float scan_brightness,
             float scan_contrast,
+            float *rgb_levels,
+            float *scan_rgb_levels,
             struct tvxx_rgb_format *in_fmt) {
     
     int i;
@@ -90,6 +92,18 @@ int tv2x_init_kernel(
     
     uint16_t *brcn_ptr1,
              *brcn_ptr2;
+    
+    float rgb_levels1[3] = {
+        rgb_levels[0]/100.0,
+        rgb_levels[1]/100.0,
+        rgb_levels[2]/100.0,
+    };
+    
+    float rgb_levels2[3] = {
+        scan_rgb_levels[0]/100.0,
+        scan_rgb_levels[1]/100.0,
+        scan_rgb_levels[2]/100.0,
+    };
     
     memset(kernel, 0, sizeof(*kernel));
     kernel->brightness = brightness;
@@ -114,30 +128,30 @@ int tv2x_init_kernel(
     brcn_ptr1 = &kernel->brcn_table[0];
     brcn_ptr2 = &kernel->brcn_table[768];
     for (i = 0; i <= in_fmt->r_mask; i++) {
-        result = brcn_filter_process(brcn_filter_red, i);
+        result = brcn_filter_process(brcn_filter_red, i*rgb_levels1[0]);
         brcn_ptr1[i] = (int)floor(result);
         
-        result = brcn_filter_process(brcn_filter_scan_red, i);
+        result = brcn_filter_process(brcn_filter_scan_red, i*rgb_levels2[0]);
         brcn_ptr2[i] = (int)floor(result);
     }
     
     brcn_ptr1 = &kernel->brcn_table[256];
     brcn_ptr2 = &kernel->brcn_table[1024];
     for (i = 0; i <= in_fmt->g_mask; i++) {
-        result = brcn_filter_process(brcn_filter_green, i);
+        result = brcn_filter_process(brcn_filter_green, i*rgb_levels1[1]);
         brcn_ptr1[i] = (int)floor(result);
         
-        result = brcn_filter_process(brcn_filter_scan_green, i);
+        result = brcn_filter_process(brcn_filter_scan_green, i*rgb_levels2[1]);
         brcn_ptr2[i] = (int)floor(result);
     }
     
     brcn_ptr1 = &kernel->brcn_table[512];
     brcn_ptr2 = &kernel->brcn_table[1280];
     for (i = 0; i <= in_fmt->b_mask; i++) {
-        result = brcn_filter_process(brcn_filter_blue, i);
+        result = brcn_filter_process(brcn_filter_blue, i*rgb_levels1[2]);
         brcn_ptr1[i] = (int)floor(result);
         
-        result = brcn_filter_process(brcn_filter_scan_blue, i);
+        result = brcn_filter_process(brcn_filter_scan_blue, i*rgb_levels2[2]);
         brcn_ptr2[i] = (int)floor(result);
     }
     

@@ -16,25 +16,13 @@ int main(int argc, char **argv)
     struct timeval start, end;
     double start_t, end_t;
     
+    float rgb_levels[3] = {100.0f, 100.0f, 100.0f};
+    float scan_rgb_levels[3] = {100.0f, 100.0f, 100.0f};
+    
     /* Kernel, data pointers */
     struct tv2x_kernel kern;
     tv2x_in_type *in;
     tv2x_out_type *out;
-    
-    /*
-    uint8_t *buffer8 = (void *)0xaabbccdd;
-    uint16_t *buffer16 = (void *)0xaabbccdd;
-    uint32_t *buffer32 = (void *)0xaabbccdd;
-    
-    buffer8 = &buffer8[32 * 1024];
-    buffer16 = &((uint8_t *)buffer16)[32 * 1024];
-    buffer32 = &buffer32[32 * 1024];
-    
-    printf("%p\n", (void *)buffer8);
-    printf("%p\n", (void *)buffer16);
-    printf("%p\n", (void *)buffer32);
-    
-    exit(0);*/
     
     if (argc < 2) {
         fprintf(stderr, "Usage: test-filter <input PNG>\n");
@@ -55,30 +43,10 @@ int main(int argc, char **argv)
             10.0f,
             -30.0f,
             10.0f,
+            (float *)&rgb_levels,
+            (float *)&scan_rgb_levels,
             &tvxx_rgb_format_rgb24);
-    
-    /*
-    
-int tv2x_init_kernel(
-            struct tv2x_kernel *kernel,
-            float brightness,
-            float contrast,
-            float scan_brightness,
-            float scan_contrast,
-            struct tvxx_rgb_format *in_fmt,
-            struct tvxx_rgb_format *out_fmt);
-
-void tv2x_process(
-            struct tv2x_kernel *k,
-            tv2x_in_type * TVXX_RESTRICT in,
-            tv2x_out_type * TVXX_RESTRICT out,
-            uint32_t in_pitch,
-            uint32_t out_pitch,
-            uint32_t in_width,
-            uint32_t in_height);
-    
-    */
-    
+        
     /* Process */
     gettimeofday(&start, NULL);
 
@@ -90,16 +58,6 @@ void tv2x_process(
             width*sizeof(*out)*2,
             width,
             height);
-
-    /*
-    tv4x_process(
-            &kern,
-            in,
-            out,
-            width,
-            width*4*4,
-            width,
-            height);*/
     
     gettimeofday(&end, NULL);
     

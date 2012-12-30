@@ -144,6 +144,8 @@ int tv2x_init_kernel(
             float contrast,
             float scan_brightness,
             float scan_contrast,
+            float *rgb_levels,
+            float *scan_rgb_levels,
             struct tvxx_rgb_format *in_fmt);
 
 void tv2x_process(
