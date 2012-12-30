@@ -106,39 +106,6 @@ void rgb_convert(
                     uint32_t *out,
                     uint32_t size);
 
-/* Pack RGB */
-#define PACK_RGB(r, g, b, fmt, out)\
-    (out) =     (r) << (fmt).r_shift |\
-                (g) << (fmt).g_shift |\
-                (b) << (fmt).b_shift;
-
-/* Pack RGB with RGB Conversion Matrix */
-#define PACK_RGB_CONV(r, g, b, fmt, conv, out)\
-    (out) =     (uint8_t)((r) * (conv)[0]) << (fmt).r_shift |\
-                (uint8_t)((g) * (conv)[1]) << (fmt).g_shift |\
-                (uint8_t)((b) * (conv)[2]) << (fmt).b_shift;
-
-/* Unpack RGB */
-#define UNPACK_RGB(r, g, b, fmt, in)\
-    (r) =       (in) >> (fmt).r_shift & (fmt).r_mask;\
-    (g) =       (in) >> (fmt).g_shift & (fmt).g_mask;\
-    (b) =       (in) >> (fmt).b_shift & (fmt).b_mask;
-
-/* Unpack RGB with RGB Conversion Matrix */
-#define UNPACK_RGB_CONV(r, g, b, fmt, conv, in)\
-    (r) =       ((in) >> (fmt).r_shift & (fmt).r_mask) * (conv)[0];\
-    (g) =       ((in) >> (fmt).g_shift & (fmt).g_mask) * (conv)[1];\
-    (b) =       ((in) >> (fmt).b_shift & (fmt).b_mask) * (conv)[2];
-
-/* Clamp value macro */
-#define CLAMP(in, min, max) {\
-    if ((in) > max) {\
-        (in) = max;\
-    } else if ((in) < min) {\
-        (in) = min;\
-    }\
-}
-
 #ifdef __cplusplus
     }
 #endif
@@ -214,9 +181,7 @@ struct tv2x_kernel {
     float scan_brightness;
     float scan_contrast;
     
-    uint32_t brcn_table_r[256];
-    uint32_t brcn_table_g[256];
-    uint32_t brcn_table_b[256];
+    uint16_t brcn_table[1536]; /* 512*3 = 1536 */
     
     struct tvxx_rgb_format *in_format;
     struct tvxx_rgb_format *out_format;
@@ -418,8 +383,6 @@ TODO:
     - rgb_* functions need to be renamed to tvxx_rgb_*... Is rgb_convert() even
       needed in rgb.c? It isn't used outside of the tests.
     - Merge common code between tv4x and tv2x.
-    - Tool to package up source/header files into a single source/header file,
-      for easy integration into existing projects.
 
 */
 
@@ -489,7 +452,13 @@ int tv2x_init_kernel(
     double result;
     double  *brcn_filter_red,
             *brcn_filter_green,
-            *brcn_filter_blue;
+            *brcn_filter_blue,
+            *brcn_filter_scan_red,
+            *brcn_filter_scan_green,
+            *brcn_filter_scan_blue;
+    
+    uint16_t *brcn_ptr1,
+             *brcn_ptr2;
     
     memset(kernel, 0, sizeof(*kernel));
     kernel->brightness = brightness;
@@ -504,46 +473,59 @@ int tv2x_init_kernel(
     brcn_filter_green = brcn_get_filter(brightness, contrast, in_fmt->g_mask);
     brcn_filter_blue = brcn_get_filter(brightness, contrast, in_fmt->b_mask);
     
+    /* Scanline brightness/contrast */
+    brcn_filter_scan_red = brcn_get_filter(scan_brightness, scan_contrast, in_fmt->r_mask);
+    brcn_filter_scan_green = brcn_get_filter(scan_brightness, scan_contrast, in_fmt->g_mask);
+    brcn_filter_scan_blue = brcn_get_filter(scan_brightness, scan_contrast, in_fmt->b_mask);
+    
     /* TODO: Controlable Red/Green/Blue levels */
     
+    brcn_ptr1 = &kernel->brcn_table[0];
+    brcn_ptr2 = &kernel->brcn_table[768];
     for (i = 0; i <= in_fmt->r_mask; i++) {
         result = brcn_filter_process(brcn_filter_red, i);
-        kernel->brcn_table_r[i] = (int)floor(result);
+        brcn_ptr1[i] = (int)floor(result);
+        
+        result = brcn_filter_process(brcn_filter_scan_red, i);
+        brcn_ptr2[i] = (int)floor(result);
     }
     
+    brcn_ptr1 = &kernel->brcn_table[256];
+    brcn_ptr2 = &kernel->brcn_table[1024];
     for (i = 0; i <= in_fmt->g_mask; i++) {
         result = brcn_filter_process(brcn_filter_green, i);
-        kernel->brcn_table_g[i] = (int)floor(result);
+        brcn_ptr1[i] = (int)floor(result);
+        
+        result = brcn_filter_process(brcn_filter_scan_green, i);
+        brcn_ptr2[i] = (int)floor(result);
     }
     
+    brcn_ptr1 = &kernel->brcn_table[512];
+    brcn_ptr2 = &kernel->brcn_table[1280];
     for (i = 0; i <= in_fmt->b_mask; i++) {
         result = brcn_filter_process(brcn_filter_blue, i);
-        kernel->brcn_table_b[i] = (int)floor(result);
+        brcn_ptr1[i] = (int)floor(result);
+        
+        result = brcn_filter_process(brcn_filter_scan_blue, i);
+        brcn_ptr2[i] = (int)floor(result);
     }
     
     free(brcn_filter_red);
     free(brcn_filter_green);
     free(brcn_filter_blue);
+    free(brcn_filter_scan_red);
+    free(brcn_filter_scan_green);
+    free(brcn_filter_scan_blue);
 
     return 1;
 }
 
+/* RG BR GB */
 static float rgb_matrix[3][2][3] = {
-    {{1.10f, 1.00f, 1.00f}, {1.00f, 1.10f, 1.00f}},
-    {{1.00f, 1.00f, 1.10f}, {1.10f, 1.00f, 1.00f}},
-    {{1.00f, 1.10f, 1.00f}, {1.00f, 1.00f, 1.10f}},
-    
-    /*
     {{1.05f, 1.00f, 1.00f}, {1.00f, 1.05f, 1.00f}},
     {{1.00f, 1.00f, 1.05f}, {1.05f, 1.00f, 1.00f}},
-    {{1.00f, 1.05f, 1.00f}, {1.00f, 1.00f, 1.05f}},*/
+    {{1.00f, 1.05f, 1.00f}, {1.00f, 1.00f, 1.05f}},
 };
-
-/*
-
-RG BR GB
-
-*/
 
 void tv2x_process(
             struct tv2x_kernel *kernel,
@@ -555,20 +537,25 @@ void tv2x_process(
             uint32_t in_height) {
     
     int x, y;
-    //int i1, i2;
-    uint32_t in_r, in_g, in_b;
-    uint32_t out_r, out_g, out_b;
+    uint32_t in_r,
+             in_g,
+             in_b,
+             out_r,
+             out_g,
+             out_b;
     
-    //int out_width, out_height;
+    uint16_t *brcn_red = &kernel->brcn_table[0],
+             *brcn_green = &kernel->brcn_table[256],
+             *brcn_blue = &kernel->brcn_table[512],
+             *brcn_red_scan = &kernel->brcn_table[768],
+             *brcn_green_scan = &kernel->brcn_table[1024],
+             *brcn_blue_scan = &kernel->brcn_table[1280];
     
     tv2x_in_type    *in_ptr;
     tv2x_in_type    *out_ptr, *out_ptr2;
     
     uint32_t linear[2][3];
     uint32_t shift_mask;
-    
-    //out_width = in_width * 2;
-    //out_height = in_height * 2;
     
     /* Bit hack that allows fast "divide by two" on packed RGB values */
     PACK_RGB(1, 1, 1, (*kernel->out_format), shift_mask);
@@ -585,15 +572,33 @@ void tv2x_process(
         if (out_b > kernel->in_format->b_mask) out_b = kernel->in_format->b_mask;
     
     #if 0
+        /* Apply out matrix (slower) */
         #define APPLY_OUT_MATRIX(COLUMN)\
             out_r = (float)linear[(COLUMN)][0] * rgb_matrix[(x+(y%2))%3][(COLUMN)][0];\
             out_g = (float)linear[(COLUMN)][1] * rgb_matrix[(x+(y%2))%3][(COLUMN)][1];\
             out_b = (float)linear[(COLUMN)][2] * rgb_matrix[(x+(y%2))%3][(COLUMN)][2];
     #else
+        /* Copy without out matrix (faster) */
         #define APPLY_OUT_MATRIX(COLUMN)\
             out_r = linear[(COLUMN)][0];\
             out_g = linear[(COLUMN)][1];\
             out_b = linear[(COLUMN)][2];
+    #endif
+    
+    #if 1
+        /* Process Scanline, using brightness/contrast filter (slower). */
+        #define PROCESS_SCANLINE()\
+            PACK_RGB(\
+                brcn_red_scan[out_r],\
+                brcn_green_scan[out_g],\
+                brcn_blue_scan[out_b],\
+                (*kernel->in_format),\
+                *out_ptr2++\
+            );
+    #else
+        /* Process Scanline, using divide by two of previous pixel (faster). */
+        #define PROCESS_SCANLINE()\
+            *(out_ptr2)++ = (*out_ptr & shift_mask) >> 1;
     #endif
     
     for (y = 0; y < in_height; y++) {
@@ -609,9 +614,9 @@ void tv2x_process(
         
         /* Unpack first pixel */
         UNPACK_RGB(in_r, in_g, in_b, (*kernel->in_format), *in_ptr);
-        APPLY_CONTRAST(in_r, kernel->brcn_table_r);
-        APPLY_CONTRAST(in_g, kernel->brcn_table_g);
-        APPLY_CONTRAST(in_b, kernel->brcn_table_b);
+        APPLY_CONTRAST(in_r, brcn_red);
+        APPLY_CONTRAST(in_g, brcn_green);
+        APPLY_CONTRAST(in_b, brcn_blue);
         
         for (x = 0; x < in_width-1; x++) {
             linear[0][0] = DIVIDE_TWO(in_r);
@@ -620,9 +625,9 @@ void tv2x_process(
             
             /* Unpack next pixel */
             UNPACK_RGB(in_r, in_g, in_b, (*kernel->in_format), *(in_ptr+1));
-            APPLY_CONTRAST(in_r, kernel->brcn_table_r);
-            APPLY_CONTRAST(in_g, kernel->brcn_table_g);
-            APPLY_CONTRAST(in_b, kernel->brcn_table_b);
+            APPLY_CONTRAST(in_r, brcn_red);
+            APPLY_CONTRAST(in_g, brcn_green);
+            APPLY_CONTRAST(in_b, brcn_blue);
             
             /* Basicall (a+b)/2, where a is the current pixel, and b is the next pixel. */
             linear[0][0] += DIVIDE_TWO(in_r);
@@ -644,12 +649,8 @@ void tv2x_process(
             /* Pack to out_ptr */
             PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), *out_ptr);
             
-            //*(out_ptr+out_width) = (*out_ptr & shift_mask) >> 1;
-            
-            /* Fast "divide by two" for scanline. Uses the value we just packed, with
-               some bit hacks. */
-            //*(out_ptr+(out_pitch*2)) = (*out_ptr & shift_mask) >> 1;
-            *(out_ptr2)++ = (*out_ptr & shift_mask) >> 1;
+            /* Process Scanline */
+            PROCESS_SCANLINE();
             
             /* Increment to next column */
             out_ptr++;
@@ -663,11 +664,8 @@ void tv2x_process(
             /* Pack to out_ptr */
             PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), *out_ptr);
             
-            //*(out_ptr+out_width) = (*out_ptr & shift_mask) >> 1;
-            
-            /* Fast "divide by two" */
-            //*(out_ptr+(out_pitch*2)) = (*out_ptr & shift_mask) >> 1;
-            *(out_ptr2)++ = (*out_ptr & shift_mask) >> 1;
+            /* Process Scanline */
+            PROCESS_SCANLINE();
             
             in_ptr++;
             out_ptr++;
@@ -685,15 +683,15 @@ void tv2x_process(
         CLAMP_OUTPUT();
         PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), *out_ptr);
         
-        *(out_ptr2)++ = (*out_ptr & shift_mask) >> 1;
+        /* Process Scanline */
+        PROCESS_SCANLINE();
         out_ptr++;
         
         APPLY_OUT_MATRIX(1);
         CLAMP_OUTPUT();
         PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), *out_ptr);
             
-        /* Fast "divide by two" */
-        //*(out_ptr+out_width) = (*out_ptr & shift_mask) >> 1;
-        *(out_ptr2)++ = (*out_ptr & shift_mask) >> 1;
+        /* Process Scanline */
+        PROCESS_SCANLINE();
     }
 }
