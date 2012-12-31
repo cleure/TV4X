@@ -53,7 +53,7 @@ uint32_t *rgb24_from_png(const char *path, int *width, int *height)
     
     /* Init PNG stuff */
     png_init_io(png_ptr, fp);
-    png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
+    png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY | PNG_TRANSFORM_EXPAND, NULL);
     fclose(fp); fp = NULL;
     
     /* Get width / height, channels */
@@ -232,7 +232,7 @@ uint8_t *buffer_from_png(char *path, int *width, int *height)
     
     /* Init PNG stuff */
     png_init_io(png_ptr, fp);
-    png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
+    png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY | PNG_TRANSFORM_EXPAND, NULL);
     fclose(fp); fp = NULL;
     
     /* Get width / height, channels */
