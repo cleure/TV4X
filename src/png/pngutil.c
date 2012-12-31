@@ -69,7 +69,7 @@ uint32_t *rgb24_from_png(const char *path, int *width, int *height)
         return NULL;
     }
     
-    printf("Channels: %d\n", channels);
+    /*printf("Channels: %d\n", channels);*/
     
     /* Copy to buffer, removing alpha */
     out = buffer;
@@ -247,7 +247,7 @@ uint8_t *buffer_from_png(char *path, int *width, int *height)
         return NULL;
     }
     
-    printf("Channels: %d\n", channels);
+    /*printf("Channels: %d\n", channels);*/
     
     /* Copy to buffer, removing alpha */
     bytes_per_row = (*width) * channels;
