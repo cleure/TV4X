@@ -3,7 +3,7 @@ project (test)
 
 find_package(PNG REQUIRED)
 
-set (CMAKE_C_FLAGS "-Wall -g -DTV4X_YIQ_BLUR_ENABLED -DTV4X_USE_SSE -O3 -std=c99 -pedantic -funroll-loops -ffast-math -msse2 -fomit-frame-pointer -finline-functions")
+set (CMAKE_C_FLAGS "-Wall -g -DTV4X_YIQ_BLUR_ENABLED -DTV4X_USE_SSE -O3 -std=c99 -pedantic -funroll-loops -ffast-math -msse2 -fomit-frame-pointer -finline-functions -fasm-blocks")
 
 #configure_file (
 #    "${PROJECT_SOURCE_DIR}/config.h.in"

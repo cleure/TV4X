@@ -7,7 +7,9 @@
     extern "C" {
 #endif
 
-#include "tvxx_internal.h"
+#ifndef TVXX_PACKAGED
+    #include "tvxx_internal.h"
+#endif
 
 struct tv2x_kernel {
     float brightness;

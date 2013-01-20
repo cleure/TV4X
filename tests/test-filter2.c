@@ -155,8 +155,7 @@ int main(int argc, char **argv)
     check_setup(&s);
     
     if (argc < 3) {
-        fprintf(stderr, "Usage: test-filter <input> <output>\n");
-        exit(1);
+        help();
     }
     
     /* Get in/out files */
