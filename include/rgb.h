@@ -50,13 +50,13 @@ extern double tvxx_rgb15_to_rgb15[3];
 
 /* Get RGB conversion table for in/out combination. Result copied into
    cnvtable, which is a pointer to an array of double with 3 elements. */
-int rgb_get_conversion_table(
+int tvxx_rgb_get_conversion_table(
             struct tvxx_rgb_format *in,
             struct tvxx_rgb_format *out,
             double (*cnvtable)[3]);
 
 /* Convert between RGB formats */
-void rgb_convert(
+void tvxx_rgb_convert(
                     struct tvxx_rgb_format *in_fmt,
                     struct tvxx_rgb_format *out_fmt,
                     uint32_t *in,

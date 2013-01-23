@@ -85,7 +85,7 @@ static struct format_lookup_table fmt_lk_table[] = {
 * @param    double (*cnvtable)[3]
 * @return   1 on success, 0 on error
 **/
-int rgb_get_conversion_table(
+int tvxx_rgb_get_conversion_table(
             struct tvxx_rgb_format *in,
             struct tvxx_rgb_format *out,
             double (*cnvtable)[3]) {
@@ -106,13 +106,14 @@ int rgb_get_conversion_table(
 /**
 * Convert between various RGB formats.
 *
-* @param    struct rgb_convert *config
+* @param    struct tvxx_rgb_format *in_fmt
+* @param    struct tvxx_rgb_format *out_fmt
 * @param    uint32_t *in
 * @param    uint32_t *out
 * @param    uint32_t size
 * @return   void
 **/
-void rgb_convert(
+void tvxx_rgb_convert(
                     struct tvxx_rgb_format *in_fmt,
                     struct tvxx_rgb_format *out_fmt,
                     uint32_t *in,

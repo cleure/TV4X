@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <memory.h>
 #include <unistd.h>
 #include <getopt.h>
 #include <math.h>
@@ -15,6 +16,8 @@ struct setup {
     float scan_rgb_levels[3];
     float bc[2];
     float scan_bc[2];
+    float rgb_matrix_min[3];
+    float rgb_matrix_max[3];
 };
 
 void help()
@@ -124,6 +127,17 @@ void check_setup(struct setup *s)
     #undef ERRCHK
 }
 
+/*
+
+RG BR GB
+static float rgb_matrix[3][2][3] = {
+    {{1.10f, 1.00f, 1.00f}, {1.00f, 1.10f, 1.00f}},
+    {{1.00f, 1.00f, 1.10f}, {1.10f, 1.00f, 1.00f}},
+    {{1.00f, 1.10f, 1.00f}, {1.00f, 1.00f, 1.10f}},
+};
+
+*/
+
 int main(int argc, char **argv)
 {
     int width, height;
@@ -138,7 +152,9 @@ int main(int argc, char **argv)
         {100.0f, 100.0f, 100.0f},
         {100.0f, 100.0f, 100.0f},
         {8.0f, 10.0f},
-        {-30.0f, 10.0f}
+        {-30.0f, 10.0f},
+        {0.97f, 0.97f, 0.97f},
+        {1.03f, 1.03f, 1.03f}
     };
     
     /* Kernel, data pointers */
@@ -178,6 +194,8 @@ int main(int argc, char **argv)
             s.scan_bc[1],
             (float *)&s.rgb_levels,
             (float *)&s.scan_rgb_levels,
+            s.rgb_matrix_min,
+            s.rgb_matrix_max,
             &tvxx_rgb_format_rgb24);
         
     /* Process */

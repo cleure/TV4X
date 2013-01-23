@@ -31,7 +31,7 @@ int main(int argc, char **argv)
     in = rgb24_from_png(argv[1], &width, &height);
     
     /* Convert to RGB15 */
-    rgb_convert(
+    tvxx_rgb_convert(
         &tvxx_rgb_format_rgb24,
         &tvxx_rgb_format_rgb15,
         in, in,
