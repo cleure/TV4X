@@ -9,19 +9,27 @@ except ImportError:
 
 from image import *
 
-def ntsc_line(line, burst_i=0.7, burst_q=0.4, offset=0.3):
+def get_line(in_line, idx, size):
+    result = []
+    for i in range(-(size/2), ((size+1)/2)):
+        l = idx + i
+        if l < 0:
+            l = 0
+        elif not (l < len(in_line)):
+            l = len(in_line) - 1
+        result.append(in_line[l])
+    return result
+
+def ntsc_line(line, burst_start=0.0, burst_i=0.7, burst_q=0.4, offset=0.3):
     line_len = len(line)
     output = [[0,0,0] for i in range(line_len)]
     offset = math.floor(offset * 100)
     
-    burst_i = 0.7
-    burst_q = 0.4
-    
     last_i = [0, line[0][1]]
     last_q = [0, line[0][2]]
     
-    accum_i = 0.0
-    accum_q = 0.0
+    accum_i = float(burst_start)
+    accum_q = float(burst_start)
     
     step_i = burst_i
     step_q = burst_q
@@ -76,11 +84,8 @@ def ntsc_line(line, burst_i=0.7, burst_q=0.4, offset=0.3):
                                 B=line[i+1][0],
                                 L=100,
                                 l=offset)
-        """
         
-        output[i][0] = line[i][0]
-        
-        """
+        #output[i][0] = line[i][0]
     
     return output
 
@@ -98,7 +103,7 @@ def main():
             yiq_line.append(yiq.from_rgb(im.data[i]))
     
         #yiq_line = yiq.simulate_composite_line(yiq_line)
-        yiq_line = ntsc_line(yiq_line)
+        yiq_line = ntsc_line(yiq_line, burst_start=([0.3, 0.6, 0.9])[y%3])
         
         """
         for i in range(len(yiq_line)):
