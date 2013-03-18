@@ -199,8 +199,111 @@ class Filter_CVKernel(Filter):
         return output
 
 class BoxScale(Filter):
-    def __init__(self): pass
-    def apply(self, input, width, height): pass
+    """ Prototype for Box scaling algorithms """
+    
+    def __init__(self, input):
+        self.input = input
+    
+    def apply(self, width, height): pass
+
+class NearestNeighborScale(BoxScale):
+    """ Nearest Neighbor Scaling Algorithm """
+
+    def apply(self, width, height):
+        input = self.input
+        output = Image(width=width, height=height)
+        
+        y2_mult = int((input.height << 16) / height + 1)
+        x2_mult = int((input.width << 16) / width + 1)
+        
+        for y in range(height):
+            y2 = (y * y2_mult) >> 16
+            for x in range(width):
+                x2 = (x * x2_mult) >> 16
+                output.set_pixel(x, y, list(input.get_pixel(x2, y2)))
+        
+        return output
+
+class BilinearScale(BoxScale):
+    """ Bilinear Scaling Algorithm """
+
+    def apply(self, width, height):
+        input = self.input
+        output = Image(width=width, height=height)
+        
+        in_y_mult   = float(input.height - 1) / height
+        in_x_mult   = float(input.width - 1) / width
+        
+        for out_y1 in range(height):
+            y = int(out_y1 * in_y_mult)
+            Ly = (out_y1 * in_y_mult) - y
+        
+            for out_x1 in range(width):
+                x = int(out_x1 * in_x_mult)
+                Lx = (out_x1 * in_x_mult) - x
+                
+                A = list(input.get_pixel(x, y))
+                B = input.get_pixel(x+1, y)
+                C = input.get_pixel(x, y+1)
+                D = input.get_pixel(x+1, y+1)
+
+                """
+                
+                Y =   A * (1 - w) * (1 - h)   +
+                      B * (    w) * (1 - h)   +
+                      C * (    h) * (1 - w)   +
+                      D * (    w) * (    h)
+                
+                """
+                for i in range(len(A)):
+                    A[i] = (
+                            (A[i] * (1 - Lx) * (1 - Ly))    +
+                            (B[i] * (    Lx) * (1 - Ly))    +
+                            (C[i] * (    Ly) * (1 - Lx))    +
+                            (D[i] * (    Lx) * (     Ly))
+                    )
+                
+                output.set_pixel(out_x1, out_y1, A)
+        
+        return output
+
+class CubicScale(BoxScale):
+    """ TODO: Cubic Scaling Algorithm """
+
+    filters = {
+        'mitchell': (0.333333333, 0.333333333),
+        'catmull':  (0.0, 0.5),
+        'bspline':  (1.0, 0.0),
+        'hermite':  (0.0, 0.0),
+    }
+
+    def __init__(self, input, filter=None, B=None, C=None):
+        self.input = input
+        
+        if filter is not None:
+            self.filter = filter
+        elif B is not None and C is not None:
+            self.filter = [B, C]
+        else:
+            self.filter = self.filters['bspline']
+        self.calc_coefficients()
+
+    def calc_coefficients(self):
+        B = self.filter[0]
+        C = self.filter[1]
+        twoB = B + B
+        
+        self.coeff = (
+            1.0 - (1.0 / 3.0) * B,
+            -3.0 + twoB + C,
+            2.0 - 1.5 * B - C,
+            (4.0 / 3.0) * B + 4.0 * C,
+            -8.0 * C - twoB,
+            B + 5.0 * C,
+            (-1.0 / 6.0) * B - C,
+        )
+
+    def apply(self, width, height): pass
 
 def get_linear(A, B, L, l):
     """
