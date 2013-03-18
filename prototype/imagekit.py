@@ -206,7 +206,7 @@ class BoxScale(Filter):
     
     def apply(self, width, height): pass
 
-class NearestNeighborScale(BoxScale):
+class Scale_NearestNeighbor(BoxScale):
     """ Nearest Neighbor Scaling Algorithm """
 
     def apply(self, width, height):
@@ -224,7 +224,7 @@ class NearestNeighborScale(BoxScale):
         
         return output
 
-class BilinearScale(BoxScale):
+class Scale_Bilinear(BoxScale):
     """ Bilinear Scaling Algorithm """
 
     def apply(self, width, height):
@@ -267,7 +267,7 @@ class BilinearScale(BoxScale):
         
         return output
 
-class CubicScale(BoxScale):
+class Scale_Cubic(BoxScale):
     """ TODO: Cubic Scaling Algorithm """
 
     filters = {

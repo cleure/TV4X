@@ -453,16 +453,6 @@ class Image(object):
     
         return value
     
-    """
-    
-import math
-    
-im = Image()
-f = im.brcn_filter_get_slope(2.0, 10.0, 255)
-print im.brcn_filter_process(f, 255)
-    
-    """
-    
     def filter_contrast(self, brightness=0.0, contrast=0.0, data=None):
         """ Brightness / Contrast Filter """
             
