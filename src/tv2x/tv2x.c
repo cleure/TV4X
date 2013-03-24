@@ -366,6 +366,14 @@ void tv2x_process(
             /* Pack to out_ptr */
             PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), *out_ptr);
             
+            #ifdef TV2X_NES_ASPECT
+            if ((x % 3) == 0) {
+                out_ptr++;
+                PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), *out_ptr);
+                PROCESS_SCANLINE();
+            }
+            #endif
+            
             /* Process Scanline */
             PROCESS_SCANLINE();
             

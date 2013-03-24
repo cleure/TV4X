@@ -46,6 +46,15 @@ void tv2x_process(
             uint32_t in_width,
             uint32_t in_height);
 
+/* Turn on for simple (nearest) NES/SNES aspect ratio fixing */
+#define TV2X_NES_ASPECT
+
+#ifdef TV2X_NES_ASPECT
+    #define tv2x_out_width(in_width) (in_width * 2 + in_width / 3)
+#else
+    #define tv2x_out_width(in_width) (in_width * 2)
+#endif
+
 #ifdef __cplusplus
     }
 #endif

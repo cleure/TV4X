@@ -260,7 +260,7 @@ class Scale_Bilinear(BoxScale):
                             (A[i] * (1 - Lx) * (1 - Ly))    +
                             (B[i] * (    Lx) * (1 - Ly))    +
                             (C[i] * (    Ly) * (1 - Lx))    +
-                            (D[i] * (    Lx) * (     Ly))
+                            (D[i] * (    Lx) * (    Ly))
                     )
                 
                 output.set_pixel(out_x1, out_y1, A)

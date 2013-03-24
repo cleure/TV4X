@@ -213,6 +213,14 @@ void tv2x_process(
             uint32_t in_width,
             uint32_t in_height);
 
+#define TV2X_NES_ASPECT
+
+#ifdef TV2X_NES_ASPECT
+    #define tv2x_out_width(in_width) (in_width * 2 + in_width / 3)
+#else
+    #define tv2x_out_width(in_width) (in_width * 2)
+#endif
+
 #ifdef __cplusplus
     }
 #endif
@@ -744,6 +752,14 @@ void tv2x_process(
             
             /* Pack to out_ptr */
             PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), *out_ptr);
+            
+            #ifdef TV2X_NES_ASPECT
+            if ((x % 3) == 0) {
+                out_ptr++;
+                PACK_RGB(out_r, out_g, out_b, (*kernel->out_format), *out_ptr);
+                PROCESS_SCANLINE();
+            }
+            #endif
             
             /* Process Scanline */
             PROCESS_SCANLINE();

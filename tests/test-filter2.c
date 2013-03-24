@@ -181,9 +181,9 @@ int main(int argc, char **argv)
     /* Read file */
     in = rgb24_from_png(infile, &width, &height);
     
-    out_width = width * 2;
+    out_width = tv2x_out_width(width);
     out_height = height * 2;
-    out = malloc(sizeof(*out) * width * height * 2 * 2);
+    out = malloc(sizeof(*out) * out_width * out_height);
     
     /* Initialize kernel */
     tv2x_init_kernel(
@@ -206,7 +206,7 @@ int main(int argc, char **argv)
             in,
             out,
             width*sizeof(*in),
-            width*sizeof(*out)*2,
+            tv2x_out_width(width)*sizeof(*out),
             width,
             height);
     
